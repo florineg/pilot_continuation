@@ -72,7 +72,7 @@ public class World {
 		int totalObjective = 0; 
 		int[] resultsObjective = new int[13];
 		for (int d = 1; d<=12; d++) {
-			MaxModel m = new MaxModel(pilots, events, planes, 20, 1.2);
+			MaxModel m = new MaxModel(pilots, events, planes, 20, 4.5);
 			if(m.solve()) {
 				m.printSolution();
 				pilots = m.updateQij(); 
