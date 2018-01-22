@@ -94,8 +94,8 @@ public class MaxModel {
 		for (int c = 0; c < C; c++) {
 			for (int j = 0; j < J; j++) {
 				for (int t = 0; t < T; t++) {
-					//IloNumVar varV = cplex.intVar(0,25);
-					IloNumVar varV = cplex.boolVar(); 
+					IloNumVar varV = cplex.intVar(0,25);
+					//IloNumVar varV = cplex.boolVar(); 
 					V[c][j][t] = varV;
 				}
 			}	
