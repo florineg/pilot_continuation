@@ -268,7 +268,40 @@ public class MaxModel {
 	
 	// additional constraints from here 
 	
-	public void init
+	public void initAssignTasks() throws IloException {
+		for (int i = 0; i < I ; i++) {
+			for (int t = 0; t<T; t++) {
+				IloNumExpr expr = cplex.numExpr(); 
+				expr = cplex.sum(expr, Holiday[i][t]); 
+				expr = cplex.sum(expr, Office[i][t]);
+				expr = cplex.sum(expr, QRA[i][t]);
+				expr = cplex.sum(expr, QRA[i][t-1]);
+				expr = cplex.sum(expr, RestDay[i][t]); 
+				expr = cplex.sum(expr, Course[t]);
+				expr = cplex.sum(expr, DutyFree[i][t]); 
+				for (int j = 0; j<J; j++) {
+					expr = cplex.sum(expr, X[i][j][t]); 
+				}
+				cplex.addEq(expr, 1); 
+			}
+		}
+	}
+	
+	public void initDayNight() {
+	}
+	
+	public void initHolidays(int nrHolidays) throws IloException {
+		for (int i = 0; i <I; i++) {
+			IloNumExpr expr = cplex.numExpr(); 
+			for (int t = 0; t<T; t++) {
+				expr = cplex.sum(expr, Holiday[i][t]);
+			}
+			cplex.addEq(expr, nrHolidays); 
+		}
+	}
+	
+	public void initLongHolidays
+ yoyoyoyoyoyo
 
 	public boolean solve() throws IloException{
 		return cplex.solve();
