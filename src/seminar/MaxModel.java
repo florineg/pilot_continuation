@@ -301,7 +301,6 @@ public class MaxModel {
 	}
 	
 	public void initLongHolidays
- yoyoyoyoyoyo
 
 	public boolean solve() throws IloException{
 		return cplex.solve();
