@@ -1,5 +1,6 @@
 package seminar;
 
+import java.awt.Event;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -117,7 +118,7 @@ public class MaxModel {
 		}
 	}
 	
-	public void initAdditionalVars() {
+	public void initAdditionalVars() throws IloException {
 		Holiday = new IloNumVar[I][T];
 		Office = new IloNumVar[I][T]; 
 		QRA = new IloNumVar[I][T];
@@ -214,7 +215,7 @@ public class MaxModel {
 					IloNumVar var2 = V[c][j][t]; 
 					expr2 = cplex.sum(expr2, var2);
 				}
-				expr2 = cplex.prod(expr2, events.get(j).getN());
+				expr2 = cplex.prod(expr2, (events.get(j)).getN());
 				
 				if (expr != null && expr2 != null){
 					cplex.addEq(expr, expr2);	
@@ -290,29 +291,65 @@ public class MaxModel {
 	public void initDayNight() {
 	}
 	
-	public void initHolidays(int nrHolidays) throws IloException {
+	public void initHolidays(int nrHolidays, int nrLongHolidays, int nrPilotsLong, int firstPilotLong) throws IloException {
 		for (int i = 0; i <I; i++) {
-			IloNumExpr expr = cplex.numExpr(); 
+			IloNumExpr expr = cplex.numExpr();  // for constraint of nrHolidays per year 
+			IloNumExpr expr2 = cplex.numExpr();  // for constraint of 1 long holiday per year 
 			for (int t = 0; t<T; t++) {
 				expr = cplex.sum(expr, Holiday[i][t]);
+				expr2 = cplex.sum(expr2, LongHoliday[i][t]);
+				
+				IloNumExpr expr3 = cplex.numExpr(); // left side of constraint for length long holiday
+				for (int time = t; time < t+9; time++) { 
+					expr3 = cplex.sum(expr3, Holiday[i][time]); 
+				}
+				IloNumExpr expr4 = cplex.numExpr();  // right side of constraint for length long holiday
+				expr4 = cplex.prod(LongHoliday[i][t], nrLongHolidays); 
+				cplex.addGe(expr3, expr4); 
 			}
 			cplex.addEq(expr, nrHolidays); 
+			if (i >= firstPilotLong && i <= firstPilotLong + nrPilotsLong) {
+				cplex.addGe(expr2, 1);	
+			}
+			 
+		}
+	}
+
+	public void initOfficeTasks(int nrOHexp, int nrOHinexp) throws IloException {
+		for (int i=0; i<I; i++) {
+			IloNumExpr expr = cplex.numExpr(); 
+			for (int t = 0 ; t<T; t++) {
+				expr = cplex.sum(expr, Office[i][t]); 
+			}
+			if (pilots.get(i).getExperienced()) {
+				cplex.addEq(expr, nrOHexp);
+			}
+			else {
+				cplex.addEq(expr, nrOHinexp);
+			}
+			 
 		}
 	}
 	
-
-	public void initLongHolidays() throws IloException {
-		for (int i = 0 ; i<I ; i++) {
-			for (int t = 0; t<T; t++) {
-				IloNumExpr expr = cplex.numExpr(); 
-				for (int time = t; time < t+9; time++) {
-					expr = cplex.sum(expr, Holiday[i][time]); 
-				}
-				IloNumExpr expr2 = cplex.numExpr(); 
-				expr2 = cplex.prod(arg0, arg1)
+	public void initQRA() throws IloException {
+		for (int t = 0; t<T; t++) {
+			IloNumExpr expr = cplex.numExpr();
+			for (int i = 0; i<I ; i++) {
+				expr = cplex.sum(expr, QRA[i][t]);
 			}
+			cplex.addEq(expr, 2); 
 		}
 	}
+	
+	public void initCourses(int nrCourses) throws IloException {
+		IloNumExpr expr = cplex.numExpr(); 
+		for (int t =0 ; t<T; t++) {	
+			expr = cplex.sum(expr, Course[t]); 
+		}
+		cplex.addEq(expr, 4);
+	}
+	
+	
 
 	public boolean solve() throws IloException{
 		return cplex.solve();
