@@ -30,6 +30,14 @@ public class MaxModel {
 	private IloNumVar[][][] V; 
 	private IloNumVar[][] Z; 
 	
+	private IloNumVar[][] Holiday ;
+	private IloNumVar[][] Office; 
+	private IloNumVar[][] QRA; 
+	private IloNumVar[][] RestDay; 
+	private IloNumVar[] Course;
+	private IloNumVar[][] DutyFree; 
+	private IloNumVar[][] LongHoliday; 
+	
 	private double beta ;
 	
 //	private HashMap<HashMap<HashMap<IloNumVar, Integer>, Integer>,Integer> varMapX; 
@@ -103,60 +111,36 @@ public class MaxModel {
 		// create Z 
 		for (int i = 0; i < I; i++) {
 			for (int j = 0; j < J; j++) {
-				IloNumVar varZ = cplex.boolVar(); 
+				IloNumVar varZ = cplex.intVar(0,25); 
 					Z[i][j] = varZ;
 			}
 		}
-		
-		
-		
-//		// create X 
-//		for(int i = 1; i<=pilots.size(); i++)
-//		{
-//			HashMap<Integer, HashMap<Integer, IloNumVar>> itemMapTemp2 = new HashMap<Integer, HashMap<Integer, IloNumVar>>(); 
-//			HashMap<HashMap<IloNumVar, Integer>, Integer> varMapTemp2 = new HashMap<HashMap<IloNumVar, Integer>, Integer>(); 
-// 			for (int j = 1; j<=events.size(); j++){
-// 				HashMap<Integer, IloNumVar> itemMapTemp = new HashMap<Integer, IloNumVar>(); 
-// 				HashMap<IloNumVar, Integer> varMapTemp = new HashMap<IloNumVar, Integer>();
-// 				for (int t = 1; t<=T; t++) {
-// 					IloNumVar varX = cplex.boolVar();
-// 					itemMapTemp.put(t,varX);
-// 					varMapTemp.put(varX,t);
-// 				}
-// 				itemMapTemp2.put(j, itemMapTemp);
-// 				varMapTemp2.put(varMapTemp, j);
-//			}	
-// 			varMapX.put(varMapTemp2,i);
-// 			itemMapX.put(i, itemMapTemp2);
-//		}
-//		
-//		// Create Y 
-//		for(int k = 1; k<=planes.size(); k++)
-//		{ 
-//			HashMap<Integer, IloNumVar> itemMapTemp = new HashMap<Integer, IloNumVar>(); 
-//			HashMap<IloNumVar, Integer> varMapTemp = new HashMap<IloNumVar, Integer>();
-//			for (int t2 = 1; t2<=T; t2++) {
-//					IloNumVar varY = cplex.boolVar();
-//					itemMapTemp.put(t2,varY);
-//					varMapTemp.put(varY,t2);
-//				}
-// 			varMapY.put(varMapTemp,k);
-// 			itemMapY.put(k, itemMapTemp);
-//		}
-//		
-//		// Create V
-//		for(int j2 = 1; j2<=events.size(); j2++)
-//		{ 
-//			HashMap<Integer, IloNumVar> itemMapTemp = new HashMap<Integer, IloNumVar>(); 
-//			HashMap<IloNumVar, Integer> varMapTemp = new HashMap<IloNumVar, Integer>();
-//			for (int t3 = 1; t3<=T; t3++) {
-//					IloNumVar varV = cplex.numVar(1,5);
-//					itemMapTemp.put(t3,varV);
-//					varMapTemp.put(varV,t3);
-//				}
-// 			varMapV.put(varMapTemp,j2);
-// 			itemMapV.put(j2, itemMapTemp);
-//		}
+	}
+	
+	public void initAdditionalVars() {
+		Holiday = new IloNumVar[I][T];
+		Office = new IloNumVar[I][T]; 
+		QRA = new IloNumVar[I][T];
+		RestDay = new IloNumVar[I][T];
+		Course = new IloNumVar[T];
+		DutyFree = new IloNumVar[I][T];
+		LongHoliday = new IloNumVar[I][T]; 
+		for (int t = 0; t<I; t++) {
+			for (int i = 0; i<T; i++) {
+				IloNumVar Var1 = cplex.boolVar(); 
+				Office[i][t] = Var1; 
+				IloNumVar Var2 = cplex.boolVar(); 
+				QRA[i][t] = Var2; 
+				IloNumVar Var3 = cplex.boolVar(); 
+				RestDay[i][t] = Var3; 
+				IloNumVar Var5 = cplex.boolVar(); 
+				DutyFree[i][t] = Var5; 
+				IloNumVar Var6 = cplex.boolVar(); 
+				LongHoliday[i][t] = Var6; 
+			}
+			IloNumVar Var4 = cplex.boolVar(); 
+			Course[t] = Var4; 
+		}
 	}
 	
 	// C1: ensures completion training
@@ -265,6 +249,7 @@ public class MaxModel {
 		}
 	}
 	
+	// objective
 	public void initObjective() throws IloException, objectNotFoundException{
 	IloNumExpr expr= cplex.linearNumExpr();
 	
@@ -281,6 +266,10 @@ public class MaxModel {
 	cplex.addMaximize(expr);
 	}
 	
+	// additional constraints from here 
+	
+	public void init
+
 	public boolean solve() throws IloException{
 		return cplex.solve();
 	}
