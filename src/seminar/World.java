@@ -73,10 +73,6 @@ public class World {
 		int[] resultsObjective = new int[13];
 		for (int d = 1; d<=12; d++) {
 			MaxModel m = new MaxModel(pilots, events, planes, 20, 4.5);
-			// add additional constraints
-//			m.initAssignTasks(); 
-//			m.initHolidays(); 
-//			m.initOfficeTask(); 
 			
 			if(m.solve()) {
 				m.printSolution();
@@ -85,6 +81,7 @@ public class World {
 				resultsObjective[d-1] = m.getObjectiveX(); 
 			}
 		}
+		
 		MaxModel m = new MaxModel(pilots, events, planes, 14, 1.2);
 		
 		if(m.solve()) {
