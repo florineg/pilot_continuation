@@ -300,8 +300,19 @@ public class MaxModel {
 		}
 	}
 	
-	public void initLongHolidays
- yoyoyoyoyoyo
+
+	public void initLongHolidays() throws IloException {
+		for (int i = 0 ; i<I ; i++) {
+			for (int t = 0; t<T; t++) {
+				IloNumExpr expr = cplex.numExpr(); 
+				for (int time = t; time < t+9; time++) {
+					expr = cplex.sum(expr, Holiday[i][time]); 
+				}
+				IloNumExpr expr2 = cplex.numExpr(); 
+				expr2 = cplex.prod(arg0, arg1)
+			}
+		}
+	}
 
 	public boolean solve() throws IloException{
 		return cplex.solve();
