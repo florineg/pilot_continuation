@@ -12,7 +12,7 @@ public class World {
 	
 
 	private ArrayList<Pilot> pilots ; 
-	private ArrayList<Event> events; 
+	private ArrayList<Training> trainings; 
 	private ArrayList<Plane> planes; 
 	
 	public World() {
@@ -27,8 +27,8 @@ public class World {
 			pilots.add(p);
 		}	
 		
-		// create events
-		events = new ArrayList<Event>(); 
+		// create trainings
+		trainings = new ArrayList<Training>(); 
 		for (int j=0; j < 46; j++) { // on aircraft
 			boolean bool_e; 
 			if (ej[j]==1) {
@@ -38,12 +38,12 @@ public class World {
 				bool_e = false; 
 			}
 			if (j< 23) {
-				Event e = new Event(j,nj[j],true, bool_e);
-				events.add(e);
+				Training e = new Training(j,nj[j],true, bool_e);
+				trainings.add(e);
 			}
 			else {
-				Event e = new Event(j,nj[j],false, bool_e); 
-				events.add(e);
+				Training e = new Training(j,nj[j],false, bool_e); 
+				trainings.add(e);
 			} 
 		}
 		
@@ -62,7 +62,7 @@ public class World {
 	}
 	
 	public void runModel() throws IloException, objectNotFoundException {
-		Model m = new Model(pilots, events, planes);
+		Model m = new Model(pilots, trainings, planes);
 		if(m.solve()) {
 			m.printSolution();
 		}
@@ -72,7 +72,7 @@ public class World {
 		int totalObjective = 0; 
 		int[] resultsObjective = new int[13];
 		for (int d = 1; d<=12; d++) {
-			MaxModel m = new MaxModel(pilots, events, planes, 20, 4.5);
+			MaxModel m = new MaxModel(pilots, trainings, planes, 20, 4.5);
 			
 			if(m.solve()) {
 				m.printSolution();
@@ -82,7 +82,7 @@ public class World {
 			}
 		}
 		
-		MaxModel m = new MaxModel(pilots, events, planes, 14, 1.2);
+		MaxModel m = new MaxModel(pilots, trainings, planes, 14, 1.2);
 		
 		if(m.solve()) {
 			m.printSolution();
@@ -92,7 +92,7 @@ public class World {
 		}
 		int leftQ = 0; 
 		for (int i = 0; i < pilots.size(); i++) {
-			for (int j = 0; j < events.size(); j++) {
+			for (int j = 0; j < trainings.size(); j++) {
 				leftQ += pilots.get(i).getQij(j);
 			}
 		}
