@@ -38,7 +38,7 @@ public class MaxModel {
 	private IloNumVar[][] DutyFree; 
 	private IloNumVar[][] LongHoliday; 
 	
-	private double beta ;
+	private double beta;
 	
 //	private HashMap<HashMap<HashMap<IloNumVar, Integer>, Integer>,Integer> varMapX; 
 //	private HashMap<Integer, HashMap<Integer, HashMap<Integer, IloNumVar>>> itemMapX; 
