@@ -1,5 +1,6 @@
 package seminar;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -370,14 +371,17 @@ public class MaxModel {
 		return obj; 
 	}
 	
-	public void printSolution() throws IloException{
+	public void printSolution() throws IloException, IOException{
 		System.out.println("Solution value: "+cplex.getObjValue());
+		int[][] Xvalue = new int[J][T];
 		for (int j=0; j<J; j++) {
 			for (int t=0; t<T; t++) {
-				IloNumVar var = X[1][j][t];
-				System.out.println("Pilot 1, Training " + j + " and time " + t+ " : " + cplex.getValue(var));;
+				Xvalue[j][t] = (int) cplex.getValue(X[1][j][t]);
 			}
 		}
+		Excel newExcel = new Excel();
+		newExcel.addExcelWorksheet("Pilot 1", Xvalue, "j", "t");
+		newExcel.writeExcelFile("TEST");
 //		for(String i: itemMapX.keySet())
 //		{
 //			for (String j: itemMapX.keySet()){
