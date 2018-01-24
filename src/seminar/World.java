@@ -1,5 +1,6 @@
 package seminar;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import ilog.concert.IloException;
@@ -68,39 +69,46 @@ public class World {
 		}
 	}
 	
-	public void runMaxModel() throws IloException, objectNotFoundException {
+	public void runMaxModel() throws IloException, objectNotFoundException, IOException {
 		int totalObjective = 0; 
-		int[] resultsObjective = new int[13];
-		for (int d = 1; d<=12; d++) {
-			MaxModel m = new MaxModel(pilots, trainings, planes, 20, 4.5);
-			
-			if(m.solve()) {
-				m.printSolution();
-				pilots = m.updateQij(); 
-				totalObjective += m.getObjectiveX(); 
-				resultsObjective[d-1] = m.getObjectiveX(); 
-			}
-		}
+//		int[] resultsObjective = new int[13];
+//		for (int d = 1; d<=12; d++) {
+//			MaxModel m = new MaxModel(pilots, trainings, planes, 20, 4.5);
+//			
+//			if(m.solve()) {
+//				m.printSolution();
+//				pilots = m.updateQij(); 
+//				totalObjective += m.getObjectiveX(); 
+//				resultsObjective[d-1] = m.getObjectiveX(); 
+//			}
+//		}
 		
-		MaxModel m = new MaxModel(pilots, trainings, planes, 14, 1.2);
+		MaxModel m = new MaxModel(pilots, trainings, planes, 20, 4.5);
 		
 		if(m.solve()) {
-			m.printSolution();
-			pilots = m.updateQij(); 
+			m.printSolution(); 
 			totalObjective += m.getObjectiveX(); 
-			resultsObjective[12] = m.getObjectiveX(); 
-		}
-		int leftQ = 0; 
-		for (int i = 0; i < pilots.size(); i++) {
-			for (int j = 0; j < trainings.size(); j++) {
-				leftQ += pilots.get(i).getQij(j);
-			}
-		}
-		System.out.println("The final solution has " + leftQ + " trainings left to plan in total");
+		} 
+		
+//		MaxModel m = new MaxModel(pilots, trainings, planes, 14, 1.2);
+//		
+//		if(m.solve()) {
+//			m.printSolution();
+//			pilots = m.updateQij(); 
+//			totalObjective += m.getObjectiveX(); 
+//			resultsObjective[12] = m.getObjectiveX(); 
+//		}
+//		int leftQ = 0; 
+//		for (int i = 0; i < pilots.size(); i++) {
+//			for (int j = 0; j < trainings.size(); j++) {
+//				leftQ += pilots.get(i).getQij(j);
+//			}
+//		}
+//		System.out.println("The final solution has " + leftQ + " trainings left to plan in total");
 		System.out.println("The total objective value is " + totalObjective);
-		for (int i = 0; i<13 ; i++) {
-			System.out.println("Month "+ i + "gives objective " + resultsObjective[i]);	
-		}
+//		for (int i = 0; i<13 ; i++) {
+//			System.out.println("Month "+ i + "gives objective " + resultsObjective[i]);	
+//		}
 		
 	}
 	

@@ -4,7 +4,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/cplex.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="seminar/lib"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Users/Gebruiker/Documents/GitHub/pilot_continuation/lib"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/commons-codec-1.10.jar"/>
