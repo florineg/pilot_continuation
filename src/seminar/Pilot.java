@@ -25,7 +25,6 @@ public class Pilot {
 				q_j[s] = qij_inexp[s];
 			}
 		}
-		 
 	}
 	
 	/**
@@ -54,5 +53,9 @@ public class Pilot {
 	
 	public int[] getQij() {
 		return q_j; 
+	}
+	
+	public boolean getExperienced() {
+		return experienced; 
 	}
 }
