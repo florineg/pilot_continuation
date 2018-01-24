@@ -47,7 +47,7 @@ public class Excel {
 	
 	public void writeExcelFile(String fileName) throws IOException {
 		// Write the output to a file
-		FileOutputStream fileOut = new FileOutputStream("C:\\Users\\Gebruiker\\Documents\\"+ fileName + ".xlsx");
+		FileOutputStream fileOut = new FileOutputStream("C:\\"+ fileName + ".xlsx");
 	    wbOut.write(fileOut);
 	    wbOut.close(); 
 	    fileOut.close(); 

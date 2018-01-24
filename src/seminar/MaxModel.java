@@ -39,7 +39,7 @@ public class MaxModel {
 	private IloNumVar[][] DutyFree; 
 	private IloNumVar[][] LongHoliday; 
 	
-	private double beta ;
+	private double beta;
 	
 //	private HashMap<HashMap<HashMap<IloNumVar, Integer>, Integer>,Integer> varMapX; 
 //	private HashMap<Integer, HashMap<Integer, HashMap<Integer, IloNumVar>>> itemMapX; 
@@ -126,8 +126,8 @@ public class MaxModel {
 		Course = new IloNumVar[T];
 		DutyFree = new IloNumVar[I][T];
 		LongHoliday = new IloNumVar[I][T]; 
-		for (int t = 0; t<I; t++) {
-			for (int i = 0; i<T; i++) {
+		for (int t = 0; t<T; t++) {
+			for (int i = 0; i<I; i++) {
 				IloNumVar Var1 = cplex.boolVar(); 
 				Office[i][t] = Var1; 
 				IloNumVar Var2 = cplex.boolVar(); 
@@ -138,6 +138,8 @@ public class MaxModel {
 				DutyFree[i][t] = Var5; 
 				IloNumVar Var6 = cplex.boolVar(); 
 				LongHoliday[i][t] = Var6; 
+				IloNumVar Var7 = cplex.boolVar(); 
+				Holiday[i][t] = Var7; 
 			}
 			IloNumVar Var4 = cplex.boolVar(); 
 			Course[t] = Var4; 
@@ -292,26 +294,43 @@ public class MaxModel {
 	}
 	
 	public void initHolidays(int nrHolidays, int nrLongHolidays, int nrPilotsLong, int firstPilotLong) throws IloException {
-		for (int i = 0; i <I; i++) {
+		// constraint for assuring x nr of holidays 
+		for (int i = 0; i < I; i++) {
 			IloNumExpr expr = cplex.numExpr();  // for constraint of nrHolidays per year 
-			IloNumExpr expr2 = cplex.numExpr();  // for constraint of 1 long holiday per year 
 			for (int t = 0; t<T; t++) {
 				expr = cplex.sum(expr, Holiday[i][t]);
-				expr2 = cplex.sum(expr2, LongHoliday[i][t]);
-				
-				IloNumExpr expr3 = cplex.numExpr(); // left side of constraint for length long holiday
-				for (int time = t; time < t+9; time++) { 
-					expr3 = cplex.sum(expr3, Holiday[i][time]); 
+			}
+			if (i> firstPilotLong && i < firstPilotLong + nrPilotsLong) {
+				cplex.addEq(expr, nrHolidays + nrLongHolidays);
+			}
+			else {
+				cplex.addEq(expr, nrHolidays);
+			}	
+		}
+		
+		// Subset of pilots that has to have a long break in this period.
+		// Assuring long break of 'nrLongHolidays'
+		// Assuring at least one long break per pilot in subset
+		for (int i = firstPilotLong; i < firstPilotLong + nrPilotsLong; i++) {
+			IloNumExpr expr4 = cplex.numExpr();
+			for (int t = 0; t < T; t++) {
+				IloNumExpr expr2 = cplex.numExpr();
+				for(int s = t; s < t + nrLongHolidays; s++) {
+					expr2 = cplex.sum(expr2, Holiday[i][t]);
 				}
-				IloNumExpr expr4 = cplex.numExpr();  // right side of constraint for length long holiday
-				expr4 = cplex.prod(LongHoliday[i][t], nrLongHolidays); 
-				cplex.addGe(expr3, expr4); 
+				
+				IloNumExpr expr3 = cplex.numExpr();
+				expr3 = cplex.sum(expr3, LongHoliday[i][t]);
+				expr3 = cplex.prod(expr3, nrLongHolidays);
+				
+				// Assuring long break of 'nrLongHolidays'
+				cplex.addGe(expr2, expr3);
+				
+				expr4 = cplex.sum(expr4, LongHoliday[i][t]);
 			}
-			cplex.addEq(expr, nrHolidays); 
-			if (i >= firstPilotLong && i <= firstPilotLong + nrPilotsLong) {
-				cplex.addGe(expr2, 1);	
-			}
-			 
+			
+			// Assuring at least one long break per pilot in subset
+			cplex.addGe(expr4, 1);
 		}
 	}
 
