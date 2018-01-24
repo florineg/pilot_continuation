@@ -83,7 +83,9 @@ public class World {
 //			}
 //		}
 		
-		MaxModel m = new MaxModel(pilots, trainings, planes, 20, 4.5);
+		MaxModel m = new MaxModel(pilots, trainings, planes, 60, 4.5);
+		m.initAdditionalVars();
+		m.initHolidays(4, 10, 11, 0);
 		
 		if(m.solve()) {
 			m.printSolution(); 
