@@ -9,5 +9,6 @@ public class Main {
 	public static void main(String [ ] args) throws IloException, objectNotFoundException {
 		World thisWorld = new World();  
 		thisWorld.runMaxModel();
+		asdfsdf;
 	}
 }
