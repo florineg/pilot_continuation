@@ -1,12 +1,12 @@
 package seminar;
 
-public class Event {
+public class Training {
 	private int j; 
 	private int n; 
 	private boolean r; // true (1) if aircraft, false (0) if simulator
 	private boolean e; // true (1) if day, false (0) if night 
 	
-	public Event(int eventj, int nrPilots, boolean aircraft, boolean day) {
+	public Training(int eventj, int nrPilots, boolean aircraft, boolean day) {
 		j = eventj; 
 		n = nrPilots; 
 		r = aircraft; 

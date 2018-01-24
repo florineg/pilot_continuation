@@ -18,7 +18,7 @@ public class MaxModel {
 	
 	private IloCplex cplex;
 	private ArrayList<Pilot> pilots; 
-	private ArrayList<Event> events; 
+	private ArrayList<Training> trainings; 
 	private ArrayList<Plane> planes;
 	private int I; 
 	private int J; 
@@ -47,12 +47,12 @@ public class MaxModel {
 //	private HashMap<Integer, HashMap<Integer, IloNumVar>> itemMapV; 
 //	private HashMap<HashMap<IloNumVar, Integer>, Integer> varMapV; 
 	
-	public MaxModel(ArrayList<Pilot> pilotList, ArrayList<Event> eventList, ArrayList<Plane> planeList, int lengthTimeFrame, double valueBeta) throws IloException, objectNotFoundException{
+	public MaxModel(ArrayList<Pilot> pilotList, ArrayList<Training> trainingList, ArrayList<Plane> planeList, int lengthTimeFrame, double valueBeta) throws IloException, objectNotFoundException{
 		pilots = pilotList; 
-		events = eventList; 
+		trainings = trainingList; 
 		planes = planeList; 
 		I = pilots.size();
-		J = events.size(); 
+		J = trainings.size(); 
 		K = planes.size();
 		T = lengthTimeFrame; 
 		beta = valueBeta; 
@@ -72,9 +72,9 @@ public class MaxModel {
 		
 		initVars();
 		initCompleteTraining(); 
-		initMax1Event(); 
+		initMax1Training(); 
 		initNrPlanesIsNrPilots(); 
-		initNrPilotsPerEvent(); 
+		initNrPilotsPerTraining(); 
 		initRequiredMachine(); 
 		initObjective();
 	}
@@ -163,8 +163,8 @@ public class MaxModel {
 		}
 	}
 	
-	// C2: ensures max 1 event per time t 
-	public void initMax1Event() throws IloException{
+	// C2: ensures max 1 Training per time t 
+	public void initMax1Training() throws IloException{
 		for (int i =0 ; i<I ; i++) {
 			for (int t=0; t<T; t++) {
 				IloNumExpr expr = cplex.numExpr();
@@ -201,7 +201,7 @@ public class MaxModel {
 	}
 	
 	//C6
-	public void initNrPilotsPerEvent()throws IloException{
+	public void initNrPilotsPerTraining()throws IloException{
 		for (int j = 0 ; j< J ; j++) {
 			for (int t = 0 ; t<T; t++) {
 				IloNumExpr expr = cplex.numExpr();
@@ -214,7 +214,7 @@ public class MaxModel {
 					IloNumVar var2 = V[c][j][t]; 
 					expr2 = cplex.sum(expr2, var2);
 				}
-				expr2 = cplex.prod(expr2, (events.get(j)).getN());
+				expr2 = cplex.prod(expr2, (trainings.get(j)).getN());
 				
 				if (expr != null && expr2 != null){
 					cplex.addEq(expr, expr2);	
@@ -240,7 +240,7 @@ public class MaxModel {
 					IloNumVar var = X[i][j][t];
 					expr2temp = cplex.sum(expr2temp, var); 
 				}
-				expr2temp = cplex.prod(expr2temp, events.get(j).getR());
+				expr2temp = cplex.prod(expr2temp, trainings.get(j).getR());
 				expr2 = cplex.sum(expr2, expr2temp); 
 			}
 			if (expr != null && expr2 != null){
@@ -256,7 +256,7 @@ public class MaxModel {
 	for(int i = 0; i < I; i++) {
 		for (int j = 0; j< J; j++) {
 			for (int t = 0; t< T; t++) { 
-				IloNumExpr term = cplex.prod(events.get(j).getN(), X[i][j][t] );
+				IloNumExpr term = cplex.prod(trainings.get(j).getN(), X[i][j][t] );
 				expr = cplex.sum(expr, X[i][j][t]);
 			}
 			IloNumExpr term2 = cplex.prod(beta, Z[i][j]); 
@@ -375,7 +375,7 @@ public class MaxModel {
 		for (int j=0; j<J; j++) {
 			for (int t=0; t<T; t++) {
 				IloNumVar var = X[1][j][t];
-				System.out.println("Pilot 1, event " + j + " and time " + t+ " : " + cplex.getValue(var));;
+				System.out.println("Pilot 1, Training " + j + " and time " + t+ " : " + cplex.getValue(var));;
 			}
 		}
 //		for(String i: itemMapX.keySet())
