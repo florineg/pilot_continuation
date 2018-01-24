@@ -15,7 +15,7 @@ public class MaxModel {
 	private static final int timelim = 300;  
 	private static final int C = 20; 
 	
-	// declaring private variables
+	
 	private IloCplex cplex;
 	private ArrayList<Pilot> pilots; 
 	private ArrayList<Event> events; 
@@ -39,6 +39,7 @@ public class MaxModel {
 	private IloNumVar[][] LongHoliday; 
 	
 	private double beta ;
+	
 //	private HashMap<HashMap<HashMap<IloNumVar, Integer>, Integer>,Integer> varMapX; 
 //	private HashMap<Integer, HashMap<Integer, HashMap<Integer, IloNumVar>>> itemMapX; 
 //	private HashMap<Integer, HashMap<Integer, IloNumVar>> itemMapY; 
