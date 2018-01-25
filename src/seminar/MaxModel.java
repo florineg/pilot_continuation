@@ -207,13 +207,13 @@ public class MaxModel {
 //		}
 		
 		for (int t = 0; t < T; t++) {
-			IloNumExpr expr1a = cplex.numExpr();
+			//IloNumExpr expr1a = cplex.numExpr();
 			IloNumExpr expr2a = cplex.numExpr();
 			IloNumExpr expr3a = cplex.numExpr();
 			
 			for(int i = 0; i < I; i++) {
 				for(int j = 0; j < J; j++) {
-					expr1a = cplex.sum(expr1a, X[i][j][t]);
+					//expr1a = cplex.sum(expr1a, X[i][j][t]);
 					
 					IloNumExpr temp = cplex.numExpr();
 					temp = cplex.sum(temp, X[i][j][t]);
@@ -231,14 +231,14 @@ public class MaxModel {
 				}
 			}
 			
-			IloNumExpr expr1b = cplex.numExpr();
+			//IloNumExpr expr1b = cplex.numExpr();
 			IloNumExpr expr2b = cplex.numExpr();
 			IloNumExpr expr3b = cplex.numExpr();
-			expr1b = cplex.sum(expr1b, K);
+			//expr1b = cplex.sum(expr1b, K);
 			expr2b = cplex.sum(expr2b, Kair);
 			expr3b = cplex.sum(expr2b, Ksim);
 			
-			cplex.addLe(expr1a, expr1b);
+			//cplex.addLe(expr1a, expr1b);
 			cplex.addLe(expr2a, expr2b);
 			cplex.addLe(expr3a, expr3b);
 		}
@@ -320,7 +320,9 @@ public class MaxModel {
 				expr = cplex.sum(expr, Holiday[i][t]); 
 				expr = cplex.sum(expr, Office[i][t]);
 				expr = cplex.sum(expr, QRA[i][t]);
-				expr = cplex.sum(expr, QRA[i][t-1]);
+				if (t!= 0) {
+					expr = cplex.sum(expr, QRA[i][t-1]);
+				}
 				expr = cplex.sum(expr, RestDay[i][t]); 
 				expr = cplex.sum(expr, Course[t]);
 				expr = cplex.sum(expr, DutyFree[i][t]); 
@@ -332,7 +334,68 @@ public class MaxModel {
 		}
 	}
 	
-	public void initDayNight() {
+	public void initSummer() throws IloException {
+		for (int t = 0; t < T; t++) {
+			IloNumExpr expr1 = cplex.numExpr();
+			for(int i = 0; i < I; i++) {
+				for(int j = 0; j < J; j++) {
+					IloNumExpr temp1 = cplex.numExpr();
+					temp1 = cplex.sum(temp1, trainings.get(j).getR());
+					
+					IloNumExpr temp2a = cplex.numExpr();
+					temp2a = cplex.sum(temp2a, trainings.get(j).getE());
+					temp2a = cplex.prod(temp2a, -1);
+					temp2a = cplex.sum(temp2a, 1);
+					
+					IloNumExpr temp3 = cplex.numExpr();
+					temp3 = cplex.sum(temp3, X[i][j][t]);
+					
+					IloNumExpr temp4 = cplex.numExpr();
+					temp4 = cplex.prod(temp1, temp2a);
+					temp4 = cplex.prod(temp4, temp3);
+					
+					expr1 = cplex.sum(expr1, temp4);
+				}
+			}
+			
+			cplex.addLe(expr1, 0);
+		}		
+	}
+	
+	public void initWinter() throws IloException {
+		for (int t = 0; t < T; t++) {
+			IloNumExpr expr1 = cplex.numExpr();
+			IloNumExpr expr2 = cplex.numExpr();
+			for(int i = 0; i < I; i++) {
+				for(int j = 0; j < J; j++) {
+					IloNumExpr temp1 = cplex.numExpr();
+					temp1 = cplex.sum(temp1, trainings.get(j).getR());
+					
+					IloNumExpr temp2a = cplex.numExpr();
+					IloNumExpr temp2b = cplex.numExpr();
+					temp2a = cplex.sum(temp2a, trainings.get(j).getE());
+					temp2b = cplex.prod(temp2a, -1);
+					temp2b = cplex.sum(temp2a, 1);
+					
+					IloNumExpr temp3 = cplex.numExpr();
+					temp3 = cplex.sum(temp3, this.X[i][j][t]);
+					
+					IloNumExpr temp4 = cplex.numExpr();
+					temp4 = cplex.prod(temp1, temp2b);
+					temp4 = cplex.prod(temp4, temp3);
+					
+					IloNumExpr temp5 = cplex.numExpr();
+					temp5 = cplex.prod(temp1, temp2a);
+					temp5 = cplex.prod(temp5, temp3);
+					
+					expr1 = cplex.sum(expr1, temp4);
+					expr2 = cplex.sum(expr2, temp4);
+				}
+			}
+			
+			cplex.addLe(expr1, 0.5*Kair);
+			cplex.addLe(expr2, 0.5*Kair);
+		}
 	}
 	
 	public void initHolidays(int nrHolidays, int nrLongHolidays, int nrPilotsLong, int firstPilotLong) throws IloException {
@@ -356,17 +419,19 @@ public class MaxModel {
 		for (int i = firstPilotLong; i < firstPilotLong + nrPilotsLong; i++) {
 			IloNumExpr expr4 = cplex.numExpr();
 			for (int t = 0; t < T; t++) {
-				IloNumExpr expr2 = cplex.numExpr();
-				for(int s = t; s < t + nrLongHolidays; s++) {
-					expr2 = cplex.sum(expr2, Holiday[i][t]);
+				if(t <= T - nrLongHolidays) {
+					IloNumExpr expr2 = cplex.numExpr();
+					for(int s = t; s < t + nrLongHolidays; s++) {
+						expr2 = cplex.sum(expr2, Holiday[i][t]);
+					}
+					
+					IloNumExpr expr3 = cplex.numExpr();
+					expr3 = cplex.sum(expr3, LongHoliday[i][t]);
+					expr3 = cplex.prod(expr3, nrLongHolidays);
+					
+					// Assuring long break of 'nrLongHolidays'
+					cplex.addGe(expr2, expr3);
 				}
-				
-				IloNumExpr expr3 = cplex.numExpr();
-				expr3 = cplex.sum(expr3, LongHoliday[i][t]);
-				expr3 = cplex.prod(expr3, nrLongHolidays);
-				
-				// Assuring long break of 'nrLongHolidays'
-				cplex.addGe(expr2, expr3);
 				
 				expr4 = cplex.sum(expr4, LongHoliday[i][t]);
 			}
@@ -403,7 +468,7 @@ public class MaxModel {
 			}
 			cplex.addEq(expr, 2); 
 			
-			if(t % 5 == 0){
+			if(t % 5 == 0 && t != T){
 				IloNumExpr expr5 = cplex.numExpr();
 					
 				for (int i = 0; i < I; i++) {
