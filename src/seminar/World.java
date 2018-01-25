@@ -71,7 +71,7 @@ public class World {
 	
 	public void runMaxModel() throws IloException, objectNotFoundException, IOException {
 		int totalObjective = 0; 
-//		int[] resultsObjective = new int[13];
+		int[] resultsObjective = new int[4];
 //		for (int d = 1; d<=12; d++) {
 //			MaxModel m = new MaxModel(pilots, trainings, planes, 20, 4.5);
 //			
@@ -82,16 +82,28 @@ public class World {
 //				resultsObjective[d-1] = m.getObjectiveX(); 
 //			}
 //		}
-		
+		//Q1
 		MaxModel m = new MaxModel(pilots, trainings, planes, 60, 4.5);
 		m.initAdditionalVars();
 		m.initHolidays(4, 10, 11, 0);
 		
 		if(m.solve()) {
 			m.printSolution(); 
+			pilots = m.updateQij(); 
 			totalObjective += m.getObjectiveX(); 
 		} 
 		
+		//Q2
+//		m = new MaxModel(pilots, trainings, planes, 60, 4.5);
+//		m.initAdditionalVars();
+//		m.initHolidays(4, 10, 11, 0);
+//		
+//		if(m.solve()) {
+//			m.printSolution(); 
+//			pilots = m.updateQij(); 
+//			totalObjective += m.getObjectiveX(); 
+//		} 
+//		
 //		MaxModel m = new MaxModel(pilots, trainings, planes, 14, 1.2);
 //		
 //		if(m.solve()) {
