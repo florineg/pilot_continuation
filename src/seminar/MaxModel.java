@@ -13,7 +13,7 @@ import ilog.cplex.IloCplex.UnknownObjectException;
 
 public class MaxModel {
 
-	private static final int timelim = 300;  
+	private static final int timelim = 3000;  
 	private static final int C = 20; 
 	
 	
@@ -215,32 +215,24 @@ public class MaxModel {
 				for(int j = 0; j < J; j++) {
 					//expr1a = cplex.sum(expr1a, X[i][j][t]);
 					
+					// lhs first constraint 
 					IloNumExpr temp = cplex.numExpr();
 					temp = cplex.sum(temp, X[i][j][t]);
 					temp = cplex.prod(temp, trainings.get(j).getR());
 					expr2a = cplex.sum(expr2a, temp);
 					
+					// lhs second constraint 
 					IloNumExpr temp2 = cplex.numExpr();
-					IloNumExpr temp3 = cplex.numExpr();
 					temp2 = cplex.sum(temp2, X[i][j][t]);
-					temp3 = cplex.sum(temp3, trainings.get(j).getR());
-					temp3 = cplex.prod(temp2, -1);
-					temp3 = cplex.sum(temp3, 1);
+					temp2 = cplex.prod(temp2, 1-trainings.get(j).getR()); 
 					
-					expr3a = cplex.sum(expr3a, temp3);
+					expr3a = cplex.sum(expr3a, temp2);
 				}
 			}
 			
-			//IloNumExpr expr1b = cplex.numExpr();
-			IloNumExpr expr2b = cplex.numExpr();
-			IloNumExpr expr3b = cplex.numExpr();
-			//expr1b = cplex.sum(expr1b, K);
-			expr2b = cplex.sum(expr2b, Kair);
-			expr3b = cplex.sum(expr2b, Ksim);
-			
-			//cplex.addLe(expr1a, expr1b);
-			cplex.addLe(expr2a, expr2b);
-			cplex.addLe(expr3a, expr3b);
+			//cplex.addLe(expr1a, K);
+			cplex.addLe(expr2a, Kair);
+			cplex.addLe(expr3a, Ksim);
 		}
 	}
 	
@@ -320,7 +312,9 @@ public class MaxModel {
 				expr = cplex.sum(expr, Holiday[i][t]); 
 				expr = cplex.sum(expr, Office[i][t]);
 				expr = cplex.sum(expr, QRA[i][t]);
-				expr = cplex.sum(expr, QRA[i][t-1]);
+				if (t != 0) {
+					expr = cplex.sum(expr, QRA[i][t-1]);
+				}
 				expr = cplex.sum(expr, RestDay[i][t]); 
 				expr = cplex.sum(expr, Course[t]);
 				expr = cplex.sum(expr, DutyFree[i][t]); 
@@ -468,17 +462,26 @@ public class MaxModel {
 			
 			if(t % 5 == 0 && t != T){
 				IloNumExpr expr5 = cplex.numExpr();
-					
+				
 				for (int i = 0; i < I; i++) {
 					IloNumExpr expr1 = cplex.numExpr();
-					for (int theta = t; theta < t + 4; theta++) {
+					int thetaMax; 
+					if (t > T-5) {
+						thetaMax = T; 
+					}
+					else {
+						thetaMax = t+4; 
+					}
+					for (int theta = t; theta < thetaMax; theta++) {
 						expr1 = cplex.sum(expr1, QRA[i][theta]);
 					}
 					
 					IloNumExpr expr2 = cplex.numExpr();
 					IloNumExpr expr3 = cplex.numExpr();
 					IloNumExpr expr4 = cplex.numExpr();
-					expr2 = cplex.sum(expr2, RestDay[i][t+5]);
+					if (t < T-5) {
+						expr2 = cplex.sum(expr2, RestDay[i][t+5]);
+					}
 					expr3 = cplex.prod(expr1, expr2);
 					expr4 = cplex.sum(expr4, 1);
 					
@@ -536,6 +539,12 @@ public class MaxModel {
 		}
 		Excel newExcel = new Excel();
 		newExcel.addExcelWorksheet("Pilot 1", Xvalue, "j", "t");
+		newExcel.addExcelWorksheet("Holiday", convertVariable(Holiday), "i", "t");
+		newExcel.addExcelWorksheet("Long Holiday", convertVariable(LongHoliday), "i", "t");
+		newExcel.addExcelWorksheet("Office Hours", convertVariable(Office), "i", "t");
+		newExcel.addExcelWorksheet("QRA", convertVariable(QRA), "i", "t");
+		newExcel.addExcelWorksheet("RestDay", convertVariable(RestDay), "i", "t");
+		
 		newExcel.writeExcelFile("TEST");
 //		for(String i: itemMapX.keySet())
 //		{
@@ -546,6 +555,18 @@ public class MaxModel {
 //				}
 //			}
 //		}
+	}
+	
+	private int[][] convertVariable(IloNumVar[][] X) throws UnknownObjectException, IloException{
+		int M = X.length; //row 
+		int N = X[0].length; //column 
+		int[][] Xvalue = new int[M][N]; 
+		for (int m = 0; m <M; m++) {
+			for (int n = 0; n <N; n++) {
+				Xvalue[m][n] = (int) cplex.getValue(X[m][n]);
+			}
+		}
+		return Xvalue;
 	}
 	
 	public ArrayList<Pilot> updateQij() throws UnknownObjectException, IloException, objectNotFoundException{
