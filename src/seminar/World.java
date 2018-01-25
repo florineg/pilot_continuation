@@ -88,7 +88,7 @@ public class World {
 			totalObjective += m.getObjectiveX(); 
 			resultsObjective[0] = m.getObjectiveX(); 
 		} 
-		
+		// BOE 
 		//Q2
 		m = new MaxModel(pilots, trainings, 60, 12, 64, 4.5);
 		m.initAdditionalVars();
