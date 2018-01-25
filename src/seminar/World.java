@@ -72,58 +72,82 @@ public class World {
 	public void runMaxModel() throws IloException, objectNotFoundException, IOException {
 		int totalObjective = 0; 
 		int[] resultsObjective = new int[4];
-//		for (int d = 1; d<=12; d++) {
-//			MaxModel m = new MaxModel(pilots, trainings, planes, 20, 4.5);
-//			
-//			if(m.solve()) {
-//				m.printSolution();
-//				pilots = m.updateQij(); 
-//				totalObjective += m.getObjectiveX(); 
-//				resultsObjective[d-1] = m.getObjectiveX(); 
-//			}
-//		}
+		
 		//Q1
-		MaxModel m = new MaxModel(pilots, trainings, planes, 60, 4.5);
+		MaxModel m = new MaxModel(pilots, trainings, 60, 12, 63, 4.5);
 		m.initAdditionalVars();
+		m.initAssignTasks();
 		m.initHolidays(4, 10, 11, 0);
+		m.initOfficeTasks(11,6);
+		m.initQRA();
+		//m.initCourses(2); 
 		
 		if(m.solve()) {
 			m.printSolution(); 
 			pilots = m.updateQij(); 
 			totalObjective += m.getObjectiveX(); 
+			resultsObjective[0] = m.getObjectiveX(); 
+		} 
+		// BOE 
+		//Q2
+		m = new MaxModel(pilots, trainings, 60, 12, 64, 4.5);
+		m.initAdditionalVars();
+		m.initAssignTasks();
+		m.initHolidays(4, 10, 11, 0);
+		m.initOfficeTasks(11,6);
+		//m.initQRA();
+		m.initCourses(2); 
+		
+		if(m.solve()) {
+			m.printSolution(); 
+			pilots = m.updateQij(); 
+			totalObjective += m.getObjectiveX(); 
+			resultsObjective[1] = m.getObjectiveX(); 
 		} 
 		
-		//Q2
-//		m = new MaxModel(pilots, trainings, planes, 60, 4.5);
-//		m.initAdditionalVars();
-//		m.initHolidays(4, 10, 11, 0);
-//		
-//		if(m.solve()) {
-//			m.printSolution(); 
-//			pilots = m.updateQij(); 
-//			totalObjective += m.getObjectiveX(); 
-//		} 
-//		
-//		MaxModel m = new MaxModel(pilots, trainings, planes, 14, 1.2);
-//		
-//		if(m.solve()) {
-//			m.printSolution();
-//			pilots = m.updateQij(); 
-//			totalObjective += m.getObjectiveX(); 
-//			resultsObjective[12] = m.getObjectiveX(); 
-//		}
-//		int leftQ = 0; 
-//		for (int i = 0; i < pilots.size(); i++) {
-//			for (int j = 0; j < trainings.size(); j++) {
-//				leftQ += pilots.get(i).getQij(j);
-//			}
-//		}
-//		System.out.println("The final solution has " + leftQ + " trainings left to plan in total");
-		System.out.println("The total objective value is " + totalObjective);
-//		for (int i = 0; i<13 ; i++) {
-//			System.out.println("Month "+ i + "gives objective " + resultsObjective[i]);	
-//		}
+		//Q3
+		m = new MaxModel(pilots, trainings, 60, 12, 64, 4.5);
+		m.initAdditionalVars();
+		m.initAssignTasks();
+		m.initHolidays(4, 10, 11, 0);
+		m.initOfficeTasks(11,6);
+		m.initQRA();
+		//m.initCourses(2); 
 		
+		if(m.solve()) {
+			m.printSolution(); 
+			pilots = m.updateQij(); 
+			totalObjective += m.getObjectiveX(); 
+			resultsObjective[2] = m.getObjectiveX(); 
+		} 
+		
+		//Q4
+		m = new MaxModel(pilots, trainings, 64, 12, 63, 1.2);
+		m.initAdditionalVars();
+		m.initAssignTasks();
+		m.initHolidays(4, 10, 11, 0);
+		m.initOfficeTasks(11,6);
+		//m.initQRA();
+		m.initCourses(2); 
+		
+		if(m.solve()) {
+			m.printSolution(); 
+			pilots = m.updateQij(); 
+			totalObjective += m.getObjectiveX(); 
+			resultsObjective[3] = m.getObjectiveX(); 
+		} 
+		
+		int leftQ = 0; 
+		for (int i = 0; i < pilots.size(); i++) {
+			for (int j = 0; j < trainings.size(); j++) {
+				leftQ += pilots.get(i).getQij(j);
+			}
+		}
+		
+		System.out.println("The final solution has " + leftQ + " trainings left to plan in total");
+		System.out.println("The total objective value is " + totalObjective);
+		for (int i = 0; i<4 ; i++) {
+			System.out.println("Month "+ i + "gives objective " + resultsObjective[i]);	
+		}
 	}
-	
 }
