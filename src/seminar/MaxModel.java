@@ -320,9 +320,7 @@ public class MaxModel {
 				expr = cplex.sum(expr, Holiday[i][t]); 
 				expr = cplex.sum(expr, Office[i][t]);
 				expr = cplex.sum(expr, QRA[i][t]);
-				if (t!= 0) {
-					expr = cplex.sum(expr, QRA[i][t-1]);					
-				}
+				expr = cplex.sum(expr, QRA[i][t-1]);					
 				expr = cplex.sum(expr, RestDay[i][t]); 
 				expr = cplex.sum(expr, Course[t]);
 				expr = cplex.sum(expr, DutyFree[i][t]); 
