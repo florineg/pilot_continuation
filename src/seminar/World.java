@@ -74,9 +74,10 @@ public class World {
 		int[] resultsObjective = new int[4];
 		
 		//Q1
-		MaxModel m = new MaxModel(pilots, trainings, 60, 12, 63, 4.5);
+		MaxModel m = new MaxModel(pilots, trainings, 20, 12, 60, 4.5);
 		m.initAdditionalVars();
 		m.initAssignTasks();
+		m.initWinter(); 
 		m.initHolidays(4, 10, 11, 0);
 		m.initOfficeTasks(11,6);
 		m.initQRA();
@@ -86,68 +87,72 @@ public class World {
 			m.printSolution(); 
 			pilots = m.updateQij(); 
 			totalObjective += m.getObjectiveX(); 
-			resultsObjective[0] = m.getObjectiveX(); 
+			resultsObjective[0] = m.getObjectiveX();
+			System.out.println("Total objective Q1: "+ totalObjective);
 		} 
-		// BOE 
-		//Q2
-		m = new MaxModel(pilots, trainings, 60, 12, 64, 4.5);
-		m.initAdditionalVars();
-		m.initAssignTasks();
-		m.initHolidays(4, 10, 11, 0);
-		m.initOfficeTasks(11,6);
-		//m.initQRA();
-		m.initCourses(2); 
-		
-		if(m.solve()) {
-			m.printSolution(); 
-			pilots = m.updateQij(); 
-			totalObjective += m.getObjectiveX(); 
-			resultsObjective[1] = m.getObjectiveX(); 
-		} 
-		
-		//Q3
-		m = new MaxModel(pilots, trainings, 60, 12, 64, 4.5);
-		m.initAdditionalVars();
-		m.initAssignTasks();
-		m.initHolidays(4, 10, 11, 0);
-		m.initOfficeTasks(11,6);
-		m.initQRA();
-		//m.initCourses(2); 
-		
-		if(m.solve()) {
-			m.printSolution(); 
-			pilots = m.updateQij(); 
-			totalObjective += m.getObjectiveX(); 
-			resultsObjective[2] = m.getObjectiveX(); 
-		} 
-		
-		//Q4
-		m = new MaxModel(pilots, trainings, 64, 12, 63, 1.2);
-		m.initAdditionalVars();
-		m.initAssignTasks();
-		m.initHolidays(4, 10, 11, 0);
-		m.initOfficeTasks(11,6);
-		//m.initQRA();
-		m.initCourses(2); 
-		
-		if(m.solve()) {
-			m.printSolution(); 
-			pilots = m.updateQij(); 
-			totalObjective += m.getObjectiveX(); 
-			resultsObjective[3] = m.getObjectiveX(); 
-		} 
-		
-		int leftQ = 0; 
-		for (int i = 0; i < pilots.size(); i++) {
-			for (int j = 0; j < trainings.size(); j++) {
-				leftQ += pilots.get(i).getQij(j);
-			}
-		}
-		
-		System.out.println("The final solution has " + leftQ + " trainings left to plan in total");
-		System.out.println("The total objective value is " + totalObjective);
-		for (int i = 0; i<4 ; i++) {
-			System.out.println("Month "+ i + "gives objective " + resultsObjective[i]);	
-		}
+		 
+//		//Q2
+//		m = new MaxModel(pilots, trainings, 60, 12, 65, 4.5);
+//		m.initAdditionalVars();
+//		m.initAssignTasks();
+//		m.initSummer();
+//		m.initHolidays(4, 10, 12, 11);
+//		m.initOfficeTasks(12,6);
+//		//m.initQRA();
+//		m.initCourses(2); 
+//		
+//		if(m.solve()) {
+//			m.printSolution(); 
+//			pilots = m.updateQij(); 
+//			totalObjective += m.getObjectiveX(); 
+//			resultsObjective[1] = m.getObjectiveX(); 
+//		} 
+//		
+//		//Q3
+//		m = new MaxModel(pilots, trainings, 60, 12, 65, 4.5);
+//		m.initAdditionalVars();
+//		m.initAssignTasks();
+//		m.initSummer();
+//		m.initHolidays(4, 10, 12, 23);
+//		m.initOfficeTasks(12,6);
+//		m.initQRA();
+//		//m.initCourses(2); 
+//		
+//		if(m.solve()) {
+//			m.printSolution(); 
+//			pilots = m.updateQij(); 
+//			totalObjective += m.getObjectiveX(); 
+//			resultsObjective[2] = m.getObjectiveX(); 
+//		} 
+//		
+//		//Q4
+//		m = new MaxModel(pilots, trainings, 64, 12, 64, 1.2);
+//		m.initAdditionalVars();
+//		m.initAssignTasks();
+//		m.initWinter();
+//		m.initHolidays(4, 10, 12, 35);
+//		m.initOfficeTasks(12,7);
+//		//m.initQRA();
+//		m.initCourses(2); 
+//		
+//		if(m.solve()) {
+//			m.printSolution(); 
+//			pilots = m.updateQij(); 
+//			totalObjective += m.getObjectiveX(); 
+//			resultsObjective[3] = m.getObjectiveX(); 
+//		} 
+//		
+//		int leftQ = 0; 
+//		for (int i = 0; i < pilots.size(); i++) {
+//			for (int j = 0; j < trainings.size(); j++) {
+//				leftQ += pilots.get(i).getQij(j);
+//			}
+//		}
+//		
+//		System.out.println("The final solution has " + leftQ + " trainings left to plan in total");
+//		System.out.println("The total objective value is " + totalObjective);
+//		for (int i = 0; i<4 ; i++) {
+//			System.out.println("Month "+ i + "gives objective " + resultsObjective[i]);	
+//		}
 	}
 }

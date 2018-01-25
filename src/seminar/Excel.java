@@ -31,7 +31,7 @@ public class Excel {
 	}
 	
 	public void addExcelWorksheet(String worksheet, int[][] X, String firstIndex, String secondIndex) {
-		Sheet sheet1 = wbOut.createSheet("X"); 
+		Sheet sheet1 = wbOut.createSheet(worksheet); 
 		Row row = sheet1.createRow((short)0);
 		row.createCell(0).setCellValue(firstIndex + " x " + secondIndex);
 		int M = X.length; //row 
