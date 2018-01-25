@@ -80,7 +80,7 @@ public class MaxModel {
 		initMax1Training(); 
 		initNrPlanesIsNrPilots(); 
 		initNrPilotsPerTraining(); 
-		initRequiredMachine(); 
+		//initRequiredMachine(); 
 		initObjective();
 	}
 	
@@ -209,25 +209,38 @@ public class MaxModel {
 		for (int t = 0; t < T; t++) {
 			IloNumExpr expr1a = cplex.numExpr();
 			IloNumExpr expr2a = cplex.numExpr();
+			IloNumExpr expr3a = cplex.numExpr();
 			
 			for(int i = 0; i < I; i++) {
 				for(int j = 0; j < J; j++) {
 					expr1a = cplex.sum(expr1a, X[i][j][t]);
 					
-					IloNumExpr temp = cplex.numExpr(); 
+					IloNumExpr temp = cplex.numExpr();
 					temp = cplex.sum(temp, X[i][j][t]);
 					temp = cplex.prod(temp, trainings.get(j).getR());
 					expr2a = cplex.sum(expr2a, temp);
+					
+					IloNumExpr temp2 = cplex.numExpr();
+					IloNumExpr temp3 = cplex.numExpr();
+					temp2 = cplex.sum(temp2, X[i][j][t]);
+					temp3 = cplex.sum(temp3, trainings.get(j).getR());
+					temp3 = cplex.prod(temp2, -1);
+					temp3 = cplex.sum(temp3, 1);
+					
+					expr3a = cplex.sum(expr3a, temp3);
 				}
 			}
 			
 			IloNumExpr expr1b = cplex.numExpr();
 			IloNumExpr expr2b = cplex.numExpr();
+			IloNumExpr expr3b = cplex.numExpr();
 			expr1b = cplex.sum(expr1b, K);
 			expr2b = cplex.sum(expr2b, Kair);
+			expr3b = cplex.sum(expr2b, Ksim);
 			
 			cplex.addLe(expr1a, expr1b);
 			cplex.addLe(expr2a, expr2b);
+			cplex.addLe(expr3a, expr3b);
 		}
 	}
 	
@@ -255,30 +268,31 @@ public class MaxModel {
 	}
 	
 	//C7
-	public void initRequiredMachine() throws IloException{
-		for (int t = 0; t < T; t++) {
-			// left side
-			IloNumExpr expr = cplex.numExpr();
-			for (int k = 0; k < K ; k++) {
-				IloNumExpr term = cplex.prod(planes.get(k).getType(), Y[k][t]);
-				expr = cplex.sum(expr, term); 
-			}
-			// right side 
-			IloNumExpr expr2 = cplex.numExpr();
-			for (int j = 0; j<J; j++) {
-				IloNumExpr expr2temp = cplex.numExpr();
-				for (int i = 0; i<I; i++) {
-					IloNumVar var = X[i][j][t];
-					expr2temp = cplex.sum(expr2temp, var); 
-				}
-				expr2temp = cplex.prod(expr2temp, trainings.get(j).getR());
-				expr2 = cplex.sum(expr2, expr2temp); 
-			}
-			if (expr != null && expr2 != null){
-				cplex.addEq(expr, expr2);	
-			}
-		}
-	}
+//	public void initRequiredMachine() throws IloException{
+//		for (int t = 0; t < T; t++) {
+//			// left side
+//			IloNumExpr expr = cplex.numExpr();
+//			for (int k = 0; k < K ; k++) {
+//				IloNumExpr term = cplex.prod(planes.get(k).getType(), Y[k][t]);
+//				expr = cplex.sum(expr, term); 
+//			}
+//			
+//			// right side 
+//			IloNumExpr expr2 = cplex.numExpr();
+//			for (int j = 0; j<J; j++) {
+//				IloNumExpr expr2temp = cplex.numExpr();
+//				for (int i = 0; i<I; i++) {
+//					IloNumVar var = X[i][j][t];
+//					expr2temp = cplex.sum(expr2temp, var); 
+//				}
+//				expr2temp = cplex.prod(expr2temp, trainings.get(j).getR());
+//				expr2 = cplex.sum(expr2, expr2temp); 
+//			}
+//			if (expr != null && expr2 != null){
+//				cplex.addEq(expr, expr2);	
+//			}
+//		}
+//	}
 	
 	// objective
 	public void initObjective() throws IloException, objectNotFoundException{
@@ -421,7 +435,7 @@ public class MaxModel {
 	
 	public void initCourses(int nrCourses) throws IloException {
 		IloNumExpr expr = cplex.numExpr(); 
-		for (int t =0 ; t<T; t++) {	
+		for (int t = 0 ; t<T; t++) {	
 			expr = cplex.sum(expr, Course[t]); 
 		}
 		cplex.addEq(expr, 4);
