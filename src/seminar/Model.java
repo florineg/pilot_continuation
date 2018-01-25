@@ -15,7 +15,6 @@ public class Model {
 	private static final int T = 254; 
 	private static final int C = 20; 
 	
-	
 	private IloCplex cplex;
 	private ArrayList<Pilot> pilots; 
 	private ArrayList<Training> trainings; 
