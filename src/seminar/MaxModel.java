@@ -393,11 +393,11 @@ public class MaxModel {
 	public void initHolidays(int nrHolidays, int nrLongHolidays, int nrPilotsLong, int firstPilotLong) throws IloException {
 		// constraint for assuring x nr of holidays 
 		for (int i = 0; i < I; i++) {
-			IloNumExpr expr = cplex.numExpr();  // for constraint of nrHolidays per year 
+			IloNumExpr expr = cplex.numExpr();  // for constraint of nrHolidays per period  
 			for (int t = 0; t<T; t++) {
 				expr = cplex.sum(expr, Holiday[i][t]);
 			}
-			if (i> firstPilotLong && i < firstPilotLong + nrPilotsLong) {
+			if (i >= firstPilotLong && i < firstPilotLong + nrPilotsLong) {
 				cplex.addEq(expr, nrHolidays + nrLongHolidays);
 			}
 			else {
@@ -409,27 +409,23 @@ public class MaxModel {
 		// Assuring long break of 'nrLongHolidays'
 		// Assuring at least one long break per pilot in subset
 		for (int i = firstPilotLong; i < firstPilotLong + nrPilotsLong; i++) {
-			IloNumExpr expr4 = cplex.numExpr();
-			for (int t = 0; t < T; t++) {
-				if(t <= T - nrLongHolidays) {
-					IloNumExpr expr2 = cplex.numExpr();
-					for(int s = t; s < t + nrLongHolidays; s++) {
-						expr2 = cplex.sum(expr2, Holiday[i][t]);
-					}
-					
-					IloNumExpr expr3 = cplex.numExpr();
-					expr3 = cplex.sum(expr3, LongHoliday[i][t]);
-					expr3 = cplex.prod(expr3, nrLongHolidays);
-					
-					// Assuring long break of 'nrLongHolidays'
-					cplex.addGe(expr2, expr3);
-				}
+			IloNumExpr expr4 = cplex.numExpr(); // lhs of requiring one long holiday 
+			for (int t = 0; t <= T- nrLongHolidays; t++) {
+				IloNumExpr expr2 = cplex.numExpr(); //lhs of long holiday of 10 days 
+				for(int s = t; s < t + nrLongHolidays; s++) {
+					expr2 = cplex.sum(expr2, Holiday[i][t]);
+				}	
+				IloNumExpr expr3 = cplex.numExpr(); // rhs of long holiday of 10 days 
+				expr3 = cplex.sum(expr3, LongHoliday[i][t]);
+				expr3 = cplex.prod(expr3, nrLongHolidays);
+				
+				// Assuring long break of 'nrLongHolidays'
+				cplex.addGe(expr2, expr3);
 				
 				expr4 = cplex.sum(expr4, LongHoliday[i][t]);
 			}
-			
 			// Assuring at least one long break per pilot in subset
-			cplex.addGe(expr4, 1);
+			cplex.addEq(expr4, 1);
 		}
 	}
 	
@@ -563,7 +559,12 @@ public class MaxModel {
 		int[][] Xvalue = new int[M][N]; 
 		for (int m = 0; m <M; m++) {
 			for (int n = 0; n <N; n++) {
+				try {
 				Xvalue[m][n] = (int) cplex.getValue(X[m][n]);
+				}
+				catch(UnknownObjectException e) {
+					Xvalue[m][n] = 0;
+				}
 			}
 		}
 		return Xvalue;

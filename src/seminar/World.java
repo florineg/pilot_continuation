@@ -48,18 +48,18 @@ public class World {
 			} 
 		}
 		
-		// create planes 
-		planes = new ArrayList<Plane>(); 
-		for (int k = 0; k < 68; k++) {
-			if (k<60) {
-				Plane pl = new Plane(k, true);
-				planes.add(pl);
-			}
-			else {
-				Plane pl = new Plane(k, false);
-				planes.add(pl);
-			}
-		}
+//		// create planes 
+//		planes = new ArrayList<Plane>(); 
+//		for (int k = 0; k < 68; k++) {
+//			if (k<60) {
+//				Plane pl = new Plane(k, true);
+//				planes.add(pl);
+//			}
+//			else {
+//				Plane pl = new Plane(k, false);
+//				planes.add(pl);
+//			}
+//		}
 	}
 	
 	public void runModel() throws IloException, objectNotFoundException {
@@ -74,7 +74,7 @@ public class World {
 		int[] resultsObjective = new int[4];
 		
 		//Q1
-		MaxModel m = new MaxModel(pilots, trainings, 20, 12, 60, 4.5);
+		MaxModel m = new MaxModel(pilots, trainings, 60, 12, 60, 4.5);
 		m.initAdditionalVars();
 		m.initAssignTasks();
 		m.initWinter(); 
@@ -126,7 +126,7 @@ public class World {
 //		} 
 //		
 //		//Q4
-//		m = new MaxModel(pilots, trainings, 64, 12, 64, 1.2);
+//		m = new MaxModel(pilots, trainings, 60, 12, 64, 1.2);
 //		m.initAdditionalVars();
 //		m.initAssignTasks();
 //		m.initWinter();
