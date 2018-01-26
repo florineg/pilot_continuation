@@ -30,7 +30,7 @@ public class MaxModel {
 	
 	private IloNumVar[][][] X;
 //	private IloNumVar[][] Y;
-	private IloNumVar[][][] V; 
+	private IloNumVar[][] V; 
 	private IloNumVar[][] Z; 
 	
 	private IloNumVar[][] Holiday ;
@@ -69,7 +69,7 @@ public class MaxModel {
 //		varMapV = new HashMap<HashMap<IloNumVar, Integer>, Integer>();
 		X = new IloNumVar[I][J][T];
 //		Y = new IloNumVar[K][T];
-		V = new IloNumVar[C][J][T]; 
+		V = new IloNumVar[J][T]; 
 		Z = new IloNumVar[I][J]; 
 		
 		cplex = new IloCplex();
@@ -77,7 +77,7 @@ public class MaxModel {
 		
 		initVars();
 		initCompleteTraining(); 
-		initMax1Training(); 
+//		initMax1Training(); 
 		initNrPlanesIsNrPilots(); 
 		initNrPilotsPerTraining(); 
 		//initRequiredMachine(); 
@@ -104,15 +104,14 @@ public class MaxModel {
 //			}
 //		}
 		// create V 
-		for (int c = 0; c < C; c++) {
-			for (int j = 0; j < J; j++) {
-				for (int t = 0; t < T; t++) {
-					IloNumVar varV = cplex.intVar(0,25);
-					//IloNumVar varV = cplex.boolVar(); 
-					V[c][j][t] = varV;
-				}
-			}	
-		}
+		for (int j = 0; j < J; j++) {
+			for (int t = 0; t < T; t++) {
+				IloNumVar varV = cplex.intVar(0,25);
+				//IloNumVar varV = cplex.boolVar(); 
+				V[j][t] = varV;
+			}
+		}		
+
 		// create Z 
 		for (int i = 0; i < I; i++) {
 			for (int j = 0; j < J; j++) {
@@ -171,20 +170,20 @@ public class MaxModel {
 	}
 	
 	// C2: ensures max 1 Training per time t 
-	public void initMax1Training() throws IloException{
-		for (int i =0 ; i<I ; i++) {
-			for (int t=0; t<T; t++) {
-				IloNumExpr expr = cplex.numExpr();
-				for (int j = 0 ; j<J; j++) {
-					IloNumVar var= X[i][j][t];
-					expr = cplex.sum(expr, var);
-				}
-				if (expr != null){
-				cplex.addLe(expr, 1);	
-				}
-			}
-		}
-	}
+//	public void initMax1Training() throws IloException{
+//		for (int i =0 ; i<I ; i++) {
+//			for (int t=0; t<T; t++) {
+//				IloNumExpr expr = cplex.numExpr();
+//				for (int j = 0 ; j<J; j++) {
+//					IloNumVar var= X[i][j][t];
+//					expr = cplex.sum(expr, var);
+//				}
+//				if (expr != null){
+//				cplex.addLe(expr, 1);	
+//				}
+//			}
+//		}
+//	}
 	
 	// Assuring max number of planes available
 	public void initNrPlanesIsNrPilots() throws IloException{
@@ -246,10 +245,8 @@ public class MaxModel {
 					expr = cplex.sum(expr, var);
 				}
 				IloNumExpr expr2 = cplex.numExpr();
-				for (int c = 0; c < C; c++) {
-					IloNumVar var2 = V[c][j][t]; 
-					expr2 = cplex.sum(expr2, var2);
-				}
+				IloNumVar var2 = V[j][t]; 
+				expr2 = cplex.sum(expr2, var2);
 				expr2 = cplex.prod(expr2, (trainings.get(j)).getN());
 				
 				if (expr != null && expr2 != null){
@@ -488,7 +485,6 @@ public class MaxModel {
 				cplex.addEq(expr5, 4);
 			}
 		}
-		
 	}
 	
 	public void initCourses(int nrCourses) throws IloException {
