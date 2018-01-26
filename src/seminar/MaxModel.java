@@ -294,7 +294,7 @@ public class MaxModel {
 		for (int j = 0; j< J; j++) {
 			for (int t = 0; t< T; t++) { 
 				IloNumExpr term = cplex.prod(trainings.get(j).getN(), X[i][j][t] );
-				expr = cplex.sum(expr, X[i][j][t]);
+				expr = cplex.sum(expr, term);
 			}
 			IloNumExpr term2 = cplex.prod(beta, Z[i][j]); 
 			expr = cplex.diff(expr, term2);
@@ -410,10 +410,10 @@ public class MaxModel {
 		// Assuring at least one long break per pilot in subset
 		for (int i = firstPilotLong; i < firstPilotLong + nrPilotsLong; i++) {
 			IloNumExpr expr4 = cplex.numExpr(); // lhs of requiring one long holiday 
-			for (int t = 0; t <= T- nrLongHolidays; t++) {
+			for (int t = 0; t <= T-nrLongHolidays; t++) {
 				IloNumExpr expr2 = cplex.numExpr(); //lhs of long holiday of 10 days 
 				for(int s = t; s < t + nrLongHolidays; s++) {
-					expr2 = cplex.sum(expr2, Holiday[i][t]);
+					expr2 = cplex.sum(expr2, Holiday[i][s]);
 				}	
 				IloNumExpr expr3 = cplex.numExpr(); // rhs of long holiday of 10 days 
 				expr3 = cplex.sum(expr3, LongHoliday[i][t]);
@@ -456,7 +456,7 @@ public class MaxModel {
 			}
 			cplex.addEq(expr, 2); 
 			
-			if(t % 5 == 0 && t != T){
+			if(t % 5 == 0){
 				IloNumExpr expr5 = cplex.numExpr();
 				
 				for (int i = 0; i < I; i++) {
@@ -474,22 +474,18 @@ public class MaxModel {
 					
 					IloNumExpr expr2 = cplex.numExpr();
 					IloNumExpr expr3 = cplex.numExpr();
-					IloNumExpr expr4 = cplex.numExpr();
+					
 					if (t < T-5) {
 						expr2 = cplex.sum(expr2, RestDay[i][t+5]);
 					}
-					expr3 = cplex.prod(expr1, expr2);
-					expr4 = cplex.sum(expr4, 1);
+					expr3 = cplex.sum(expr1, expr2);
 					
-					cplex.addLe(expr3, expr4);
+					cplex.addLe(expr3, 1);
 					
 					expr5 = cplex.sum(expr5, RestDay[i][t]);
 				}
-				
-				IloNumExpr expr6 = cplex.numExpr();
-				expr6 = cplex.sum(expr6, 4);
-				
-				cplex.addEq(expr5, expr6);
+							
+				cplex.addEq(expr5, 4);
 			}
 		}
 		
@@ -500,7 +496,7 @@ public class MaxModel {
 		for (int t = 0 ; t<T; t++) {	
 			expr = cplex.sum(expr, Course[t]); 
 		}
-		cplex.addEq(expr, 4);
+		cplex.addEq(expr, nrCourses);
 	}
 	
 	
