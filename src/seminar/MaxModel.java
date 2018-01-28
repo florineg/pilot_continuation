@@ -588,6 +588,14 @@ public class MaxModel {
 		return pilots; 
 	}
 	
+	public void writeSolution() throws IloException{
+		cplex.writeMIPStart("start.mst");
+	}
+	
+	public void readSolution() throws IloException{
+		cplex.readMIPStarts("start.mst");
+	}
+	
 	public void closeModel(){
 		cplex.end(); 
 	}
