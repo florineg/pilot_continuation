@@ -13,8 +13,7 @@ import ilog.cplex.IloCplex.UnknownObjectException;
 
 public class MaxModel {
 
-	private static final int timelim = 3000;  
-	private static final int C = 20; 
+	private static final int timelim = 1000;  
 	
 	
 	private IloCplex cplex;
@@ -40,6 +39,10 @@ public class MaxModel {
 	private IloNumVar[] Course;
 	private IloNumVar[][] DutyFree; 
 	private IloNumVar[][] LongHoliday; 
+	
+	private int[][] q_done; 
+	private int[][] q_more; 
+	boolean q_filled; 
 	
 	private double beta;
 	
@@ -71,6 +74,10 @@ public class MaxModel {
 //		Y = new IloNumVar[K][T];
 		V = new IloNumVar[J][T]; 
 		Z = new IloNumVar[I][J]; 
+		
+		q_done = new int[I][J];
+		q_more = new int[I][J];
+		q_filled = false; 
 		
 		cplex = new IloCplex();
 		cplex.setParam(	IloCplex.Param.TimeLimit, timelim); 
@@ -328,25 +335,15 @@ public class MaxModel {
 			IloNumExpr expr1 = cplex.numExpr();
 			for(int i = 0; i < I; i++) {
 				for(int j = 0; j < J; j++) {
+					// lhs 1
 					IloNumExpr temp1 = cplex.numExpr();
-					temp1 = cplex.sum(temp1, trainings.get(j).getR());
+					temp1 = cplex.sum(temp1, 1- trainings.get(j).getE());
+					temp1 = cplex.prod(temp1, this.X[i][j][t]);
+					temp1 = cplex.prod(temp1, trainings.get(j).getR());
 					
-					IloNumExpr temp2a = cplex.numExpr();
-					temp2a = cplex.sum(temp2a, trainings.get(j).getE());
-					temp2a = cplex.prod(temp2a, -1);
-					temp2a = cplex.sum(temp2a, 1);
-					
-					IloNumExpr temp3 = cplex.numExpr();
-					temp3 = cplex.sum(temp3, X[i][j][t]);
-					
-					IloNumExpr temp4 = cplex.numExpr();
-					temp4 = cplex.prod(temp1, temp2a);
-					temp4 = cplex.prod(temp4, temp3);
-					
-					expr1 = cplex.sum(expr1, temp4);
+					expr1 = cplex.sum(expr1, temp1);
 				}
 			}
-			
 			cplex.addLe(expr1, 0);
 		}		
 	}
@@ -357,31 +354,23 @@ public class MaxModel {
 			IloNumExpr expr2 = cplex.numExpr();
 			for(int i = 0; i < I; i++) {
 				for(int j = 0; j < J; j++) {
+					
+					// lhs 1
 					IloNumExpr temp1 = cplex.numExpr();
-					temp1 = cplex.sum(temp1, trainings.get(j).getR());
+					temp1 = cplex.sum(temp1, 1- trainings.get(j).getE());
+					temp1 = cplex.prod(temp1, this.X[i][j][t]);
+					temp1 = cplex.prod(temp1, trainings.get(j).getR());
+				
+					// lhs 2
+					IloNumExpr temp2 = cplex.numExpr();
+					temp2 = cplex.sum(temp2, trainings.get(j).getE());
+					temp2 = cplex.prod(temp2, this.X[i][j][t]);
+					temp2 = cplex.prod(temp2, trainings.get(j).getR());
 					
-					IloNumExpr temp2a = cplex.numExpr();
-					IloNumExpr temp2b = cplex.numExpr();
-					temp2a = cplex.sum(temp2a, trainings.get(j).getE());
-					temp2b = cplex.prod(temp2a, -1);
-					temp2b = cplex.sum(temp2a, 1);
-					
-					IloNumExpr temp3 = cplex.numExpr();
-					temp3 = cplex.sum(temp3, this.X[i][j][t]);
-					
-					IloNumExpr temp4 = cplex.numExpr();
-					temp4 = cplex.prod(temp1, temp2b);
-					temp4 = cplex.prod(temp4, temp3);
-					
-					IloNumExpr temp5 = cplex.numExpr();
-					temp5 = cplex.prod(temp1, temp2a);
-					temp5 = cplex.prod(temp5, temp3);
-					
-					expr1 = cplex.sum(expr1, temp4);
-					expr2 = cplex.sum(expr2, temp4);
+					expr1 = cplex.sum(expr1, temp1);
+					expr2 = cplex.sum(expr2, temp2);
 				}
 			}
-			
 			cplex.addLe(expr1, 0.5*Kair);
 			cplex.addLe(expr2, 0.5*Kair);
 		}
@@ -517,32 +506,29 @@ public class MaxModel {
 		return obj; 
 	}
 	
-	public void printSolution() throws IloException, IOException{
-		System.out.println("Solution value: "+cplex.getObjValue());
-		int[][] Xvalue = new int[J][T];
-		for (int j=0; j<J; j++) {
-			for (int t=0; t<T; t++) {
-				Xvalue[j][t] = (int) cplex.getValue(X[1][j][t]);
+	public void printSolution(String name) throws IloException, IOException, objectNotFoundException{
+		if (q_filled) {
+			System.out.println("Solution value: "+cplex.getObjValue());
+			int[][] Xvalue = new int[J][T];
+			for (int j=0; j<J; j++) {
+				for (int t=0; t<T; t++) {
+					Xvalue[j][t] = (int) cplex.getValue(X[1][j][t]);
+				}
 			}
+			Excel newExcel = new Excel();
+			newExcel.addExcelWorksheet("Pilot 1", Xvalue, "j", "t");
+			newExcel.addExcelWorksheet("Holiday", convertVariable(Holiday), "i", "t");
+			newExcel.addExcelWorksheet("Long Holiday", convertVariable(LongHoliday), "i", "t");
+			newExcel.addExcelWorksheet("Office Hours", convertVariable(Office), "i", "t");
+			newExcel.addExcelWorksheet("QRA", convertVariable(QRA), "i", "t");
+			newExcel.addExcelWorksheet("RestDay", convertVariable(RestDay), "i", "t");
+			newExcel.addExcelWorksheet("Q_done", q_done, "i", "j");
+			newExcel.addExcelWorksheet("Q_more", q_more, "i", "j");
+			newExcel.writeExcelFile(name);
 		}
-		Excel newExcel = new Excel();
-		newExcel.addExcelWorksheet("Pilot 1", Xvalue, "j", "t");
-		newExcel.addExcelWorksheet("Holiday", convertVariable(Holiday), "i", "t");
-		newExcel.addExcelWorksheet("Long Holiday", convertVariable(LongHoliday), "i", "t");
-		newExcel.addExcelWorksheet("Office Hours", convertVariable(Office), "i", "t");
-		newExcel.addExcelWorksheet("QRA", convertVariable(QRA), "i", "t");
-		newExcel.addExcelWorksheet("RestDay", convertVariable(RestDay), "i", "t");
-		
-		newExcel.writeExcelFile("TEST");
-//		for(String i: itemMapX.keySet())
-//		{
-//			for (String j: itemMapX.keySet()){
-//				if (!i.equals(j)){
-//					IloNumVar var = itemMapX.get(i).get(j);
-//					System.out.println("Agent "+i+ "and " + j+ "(X): " +cplex.getValue(var));
-//				}
-//			}
-//		}
+		else {
+			throw new objectNotFoundException("Convert Qij before printing solution");
+		}
 	}
 	
 	private int[][] convertVariable(IloNumVar[][] X) throws UnknownObjectException, IloException{
@@ -573,23 +559,26 @@ public class MaxModel {
 				}
 				if (q[j]-sumT  >= 0) {
 					q[j] = q[j]- sumT;	
+					q_done[nri][j] = sumT; 
 				}
 				else {
+					q_done[nri][j] = q[j];
+					q_more[nri][j] = sumT - q[j];
 					q[j]= 0; 
 				}
-				 
 			}
 			i.addQj(q);
 		}
+		q_filled = true; 
 		return pilots; 
 	}
 	
-	public void writeSolution() throws IloException{
-		cplex.writeMIPStart("start.mst");
+	public void writeSolution(String Name) throws IloException{
+		cplex.writeMIPStart(Name + ".mst");
 	}
 	
-	public void readSolution() throws IloException{
-		cplex.readMIPStarts("start.mst");
+	public void readSolution(String Name) throws IloException{
+		cplex.readMIPStarts(Name + ".mst");
 	}
 	
 	public void closeModel(){
