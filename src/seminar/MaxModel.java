@@ -13,7 +13,7 @@ import ilog.cplex.IloCplex.UnknownObjectException;
 
 public class MaxModel {
 
-	private static final int timelim = 1000;  
+	private int timelim;  
 	
 	
 	private IloCplex cplex;
@@ -53,7 +53,7 @@ public class MaxModel {
 //	private HashMap<Integer, HashMap<Integer, IloNumVar>> itemMapV; 
 //	private HashMap<HashMap<IloNumVar, Integer>, Integer> varMapV; 
 	
-	public MaxModel(ArrayList<Pilot> pilotList, ArrayList<Training> trainingList, int nrAircrafts, int nrSimulators, int lengthTimeFrame, double valueBeta) throws IloException, objectNotFoundException{
+	public MaxModel(ArrayList<Pilot> pilotList, ArrayList<Training> trainingList, int nrAircrafts, int nrSimulators, int lengthTimeFrame, double valueBeta, boolean max, int time) throws IloException, objectNotFoundException{
 		pilots = pilotList; 
 		trainings = trainingList; 
 //		planes = planeList; 
@@ -64,6 +64,8 @@ public class MaxModel {
 		K = nrAircrafts + nrSimulators ; 
 		T = lengthTimeFrame; 
 		beta = valueBeta; 
+		
+		timelim = time; 
 //		varMapX = new HashMap<HashMap<HashMap<IloNumVar, Integer>, Integer>, Integer>();  
 //		itemMapX = new HashMap<Integer, HashMap<Integer, HashMap<Integer, IloNumVar>>>();  
 //		itemMapY = new HashMap<Integer, HashMap<Integer, IloNumVar>>(); 
@@ -83,12 +85,23 @@ public class MaxModel {
 		cplex.setParam(	IloCplex.Param.TimeLimit, timelim); 
 		
 		initVars();
-		initCompleteTraining(); 
+		if (max) {
+			initCompleteTraining();
+		}
+		else {
+			initCompleteTrainingMin(); 
+		}
 //		initMax1Training(); 
 		initNrPlanesIsNrPilots(); 
 		initNrPilotsPerTraining(); 
 		//initRequiredMachine(); 
-		initObjective();
+		if (max) {
+			initObjective();
+		}
+		else {
+			initMinObjective(); 
+		}
+		
 	}
 	
 	// initiates binary variables with two indices : x_ij /in {0,1}
@@ -171,6 +184,23 @@ public class MaxModel {
 				expr2 = cplex.sum(expr2, pilots.get(i).getQij(j));
 				if (expr != null && expr2 != null){
 				cplex.addLe(expr, expr2);	
+				}
+			}
+		}
+	}
+	
+	// C1: ensures completion training
+	public void initCompleteTrainingMin() throws IloException{
+		for(int i = 0; i<I; i++) {
+			for (int j = 0; j < J; j++) {
+				//lhs 
+				IloNumExpr expr= cplex.numExpr();
+				for (int t= 0; t<T; t++) { 
+					IloNumVar var= X[i][j][t];
+					expr = cplex.sum(expr, var);
+				}
+				if (expr != null){
+				cplex.addGe(expr, pilots.get(i).getQij(j));	
 				}
 			}
 		}
@@ -305,6 +335,19 @@ public class MaxModel {
 		}
 	}
 	cplex.addMaximize(expr);
+	}
+	// minimum objective
+	public void initMinObjective() throws IloException, objectNotFoundException{
+	IloNumExpr expr= cplex.linearNumExpr();
+	
+	for(int i = 0; i < I; i++) {
+		for (int j = 0; j< J; j++) {
+			for (int t = 0; t< T; t++) { 
+				expr = cplex.sum(expr, X[i][j][t]);
+			}
+		}
+	}
+	cplex.addMinimize(expr);
 	}
 	
 	// additional constraints from here 

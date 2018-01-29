@@ -74,7 +74,7 @@ public class World {
 		int[] resultsObjective = new int[4];
 		
 		//Q1
-		MaxModel m = new MaxModel(pilots, trainings, 60, 12, 60, 4.5);
+		MaxModel m = new MaxModel(pilots, trainings, 60, 12, 60, 17, true,1000);
 		m.initAdditionalVars();
 		m.initAssignTasks();
 		m.initWinter(); 
@@ -94,7 +94,7 @@ public class World {
 		} 
 		 
 		//Q2
-		m = new MaxModel(pilots, trainings, 60, 12, 65, 4.5);
+		m = new MaxModel(pilots, trainings, 60, 12, 65, 17, true, 1000);
 		m.initAdditionalVars();
 		m.initAssignTasks();
 		m.initSummer();
@@ -113,42 +113,42 @@ public class World {
 		} 
 		
 //		//Q3
-//		m = new MaxModel(pilots, trainings, 60, 12, 65, 4.5);
-//		m.initAdditionalVars();
-//		m.initAssignTasks();
-//		m.initSummer();
-//		m.initHolidays(4, 10, 12, 23);
-//		m.initOfficeTasks(12,6);
-//		m.initQRA();
-//		//m.initCourses(2); 
-//		
-////		m.readSolution("Q3");
-//		if(m.solve()) {
-//			pilots = m.updateQij();
-//			m.printSolution("Q3"); 
-//			totalObjective += m.getObjectiveX(); 
-//			resultsObjective[2] = m.getObjectiveX();
-//			m.writeSolution("Q3");
-//		} 
+		m = new MaxModel(pilots, trainings, 60, 12, 65, 15, true, 1000);
+		m.initAdditionalVars();
+		m.initAssignTasks();
+		m.initSummer();
+		m.initHolidays(4, 10, 12, 23);
+		m.initOfficeTasks(12,6);
+		m.initQRA();
+		//m.initCourses(2); 
+		
+//		m.readSolution("Q3");
+		if(m.solve()) {
+			pilots = m.updateQij();
+			m.printSolution("Q3"); 
+			totalObjective += m.getObjectiveX(); 
+			resultsObjective[2] = m.getObjectiveX();
+			m.writeSolution("Q3");
+		} 
 		
 //		//Q4
-//		m = new MaxModel(pilots, trainings, 60, 12, 64, 1.2);
-//		m.initAdditionalVars();
-//		m.initAssignTasks();
-//		m.initWinter();
-//		m.initHolidays(4, 10, 12, 35);
-//		m.initOfficeTasks(12,7);
-//		//m.initQRA();
-//		m.initCourses(2); 
-//		
-////		m.readSolution("Q4");
-//		if(m.solve()) {
-//			pilots = m.updateQij();
-//			m.printSolution("Q4"); 
-//			totalObjective += m.getObjectiveX(); 
-//			resultsObjective[3] = m.getObjectiveX();
-//			m.writeSolution("Q4");
-//		} 
+		m = new MaxModel(pilots, trainings, 60, 12, 64, 1.2, false, 1000);
+		m.initAdditionalVars();
+		m.initAssignTasks();
+		m.initWinter();
+		m.initHolidays(4, 10, 12, 35);
+		m.initOfficeTasks(12,7);
+		//m.initQRA();
+		m.initCourses(2); 
+		
+//		m.readSolution("Q4");
+		if(m.solve()) {
+			pilots = m.updateQij();
+			m.printSolution("Q4"); 
+			totalObjective += m.getObjectiveX(); 
+			resultsObjective[3] = m.getObjectiveX();
+			m.writeSolution("Q4");
+		} 
 		
 		int leftQ = 0; 
 		for (int i = 0; i < pilots.size(); i++) {
