@@ -41,9 +41,10 @@ public class MaxModel {
 	private IloNumVar[][] LongHoliday; 
 	
 	private int[][] q_done; 
-	private int[][] q_more; 
+	private int[][] q_more;
+	private int[][] q_current; 
 	boolean q_filled; 
-	
+		
 	private double beta;
 	
 //	private HashMap<HashMap<HashMap<IloNumVar, Integer>, Integer>,Integer> varMapX; 
@@ -79,6 +80,7 @@ public class MaxModel {
 		
 		q_done = new int[I][J];
 		q_more = new int[I][J];
+		q_current = new int[I][J];
 		q_filled = false; 
 		
 		cplex = new IloCplex();
@@ -330,7 +332,10 @@ public class MaxModel {
 				IloNumExpr term = cplex.prod(trainings.get(j).getN(), X[i][j][t] );
 				expr = cplex.sum(expr, term);
 			}
-			IloNumExpr term2 = cplex.prod(beta, Z[i][j]); 
+			IloNumExpr term2 = cplex.prod(trainings.get(j).getN(), Z[i][j]);
+			term2 = cplex.prod(term2, beta);
+			
+			
 			expr = cplex.diff(expr, term2);
 		}
 	}
@@ -565,8 +570,10 @@ public class MaxModel {
 			newExcel.addExcelWorksheet("Office Hours", convertVariable(Office), "i", "t");
 			newExcel.addExcelWorksheet("QRA", convertVariable(QRA), "i", "t");
 			newExcel.addExcelWorksheet("RestDay", convertVariable(RestDay), "i", "t");
+			newExcel.addExcelWorksheet("DutyFree", convertVariable(DutyFree), "i", "j");
 			newExcel.addExcelWorksheet("Q_done", q_done, "i", "j");
 			newExcel.addExcelWorksheet("Q_more", q_more, "i", "j");
+			newExcel.addExcelWorksheet("Q_current", q_current, "i", "j");
 			newExcel.writeExcelFile(name);
 		}
 		else {
@@ -603,11 +610,13 @@ public class MaxModel {
 				if (q[j]-sumT  >= 0) {
 					q[j] = q[j]- sumT;	
 					q_done[nri][j] = sumT; 
+					q_current[nri][j] = q[j];
 				}
 				else {
 					q_done[nri][j] = q[j];
 					q_more[nri][j] = sumT - q[j];
 					q[j]= 0; 
+					q_current[nri][j] = q[j];
 				}
 			}
 			i.addQj(q);

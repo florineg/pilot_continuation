@@ -73,8 +73,9 @@ public class World {
 		int totalObjective = 0; 
 		int[] resultsObjective = new int[4];
 		
+		//MaxModel(ArrayList<Pilot> pilotList, ArrayList<Training> trainingList, int nrAircrafts, int nrSimulators, int lengthTimeFrame, double valueBeta, boolean max, int time)
 		//Q1
-		MaxModel m = new MaxModel(pilots, trainings, 60, 12, 60, 17, true,1000);
+		MaxModel m = new MaxModel(pilots, trainings, 60, 12, 60, 17, true,1);
 		m.initAdditionalVars();
 		m.initAssignTasks();
 		m.initWinter(); 
@@ -83,7 +84,7 @@ public class World {
 		m.initQRA();
 		//m.initCourses(2);
 		
-//		m.readSolution("Q1");
+		m.readSolution("Q1");
 		if(m.solve()) { 
 			pilots = m.updateQij();
 			m.printSolution("Q1");
@@ -94,7 +95,7 @@ public class World {
 		} 
 		 
 		//Q2
-		m = new MaxModel(pilots, trainings, 60, 12, 65, 17, true, 1000);
+		m = new MaxModel(pilots, trainings, 60, 12, 65, 17, true, 1);
 		m.initAdditionalVars();
 		m.initAssignTasks();
 		m.initSummer();
@@ -103,7 +104,7 @@ public class World {
 		//m.initQRA();
 		m.initCourses(2); 
 		
-//		m.readSolution("Q2");
+		m.readSolution("Q2");
 		if(m.solve()) {
 			pilots = m.updateQij();
 			m.printSolution("Q2"); 
@@ -113,7 +114,7 @@ public class World {
 		} 
 		
 //		//Q3
-		m = new MaxModel(pilots, trainings, 60, 12, 65, 15, true, 1000);
+		m = new MaxModel(pilots, trainings, 60, 12, 65, 1.8, true, 1);
 		m.initAdditionalVars();
 		m.initAssignTasks();
 		m.initSummer();
@@ -122,7 +123,7 @@ public class World {
 		m.initQRA();
 		//m.initCourses(2); 
 		
-//		m.readSolution("Q3");
+		m.readSolution("Q3");
 		if(m.solve()) {
 			pilots = m.updateQij();
 			m.printSolution("Q3"); 
