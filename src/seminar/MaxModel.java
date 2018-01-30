@@ -332,10 +332,8 @@ public class MaxModel {
 				IloNumExpr term = cplex.prod(trainings.get(j).getN(), X[i][j][t] );
 				expr = cplex.sum(expr, term);
 			}
-			IloNumExpr term2 = cplex.prod(trainings.get(j).getN(), Z[i][j]);
-			term2 = cplex.prod(term2, beta);
-			
-			
+			IloNumExpr term2 = cplex.prod(beta, Z[i][j]);
+			term2 = cplex.prod(term2, trainings.get(j).getN());	
 			expr = cplex.diff(expr, term2);
 		}
 	}
