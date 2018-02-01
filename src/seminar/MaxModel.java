@@ -28,9 +28,10 @@ public class MaxModel {
 	private int T; 
 	
 	private IloNumVar[][][] X;
-//	private IloNumVar[][] Y;
 	private IloNumVar[][] V; 
 	private IloNumVar[][] Z; 
+	
+	private IloNumVar[] Y; // for extra airplanes above robustness 
 	
 	private IloNumVar[][] Holiday ;
 	private IloNumVar[][] Office; 
@@ -47,14 +48,7 @@ public class MaxModel {
 		
 	private double beta;
 	
-//	private HashMap<HashMap<HashMap<IloNumVar, Integer>, Integer>,Integer> varMapX; 
-//	private HashMap<Integer, HashMap<Integer, HashMap<Integer, IloNumVar>>> itemMapX; 
-//	private HashMap<Integer, HashMap<Integer, IloNumVar>> itemMapY; 
-//	private HashMap<HashMap<IloNumVar, Integer>, Integer> varMapY; 
-//	private HashMap<Integer, HashMap<Integer, IloNumVar>> itemMapV; 
-//	private HashMap<HashMap<IloNumVar, Integer>, Integer> varMapV; 
-	
-	public MaxModel(ArrayList<Pilot> pilotList, ArrayList<Training> trainingList, int nrAircrafts, int nrSimulators, int lengthTimeFrame, double valueBeta, boolean max, int time) throws IloException, objectNotFoundException{
+	public MaxModel(ArrayList<Pilot> pilotList, ArrayList<Training> trainingList, int nrAircrafts, int nrSimulators, int lengthTimeFrame, double valueBeta, boolean max, double minGap) throws IloException, objectNotFoundException{
 		pilots = pilotList; 
 		trainings = trainingList; 
 //		planes = planeList; 
@@ -66,17 +60,12 @@ public class MaxModel {
 		T = lengthTimeFrame; 
 		beta = valueBeta; 
 		
-		timelim = time; 
-//		varMapX = new HashMap<HashMap<HashMap<IloNumVar, Integer>, Integer>, Integer>();  
-//		itemMapX = new HashMap<Integer, HashMap<Integer, HashMap<Integer, IloNumVar>>>();  
-//		itemMapY = new HashMap<Integer, HashMap<Integer, IloNumVar>>(); 
-//		varMapY = new HashMap<HashMap<IloNumVar, Integer>, Integer>(); 
-//		itemMapV = new HashMap<Integer, HashMap<Integer, IloNumVar>>(); 
-//		varMapV = new HashMap<HashMap<IloNumVar, Integer>, Integer>();
+//		timelim = time; 
 		X = new IloNumVar[I][J][T];
-//		Y = new IloNumVar[K][T];
 		V = new IloNumVar[J][T]; 
 		Z = new IloNumVar[I][J]; 
+		
+		Y = new IloNumVar[T];
 		
 		q_done = new int[I][J];
 		q_more = new int[I][J];
@@ -84,7 +73,12 @@ public class MaxModel {
 		q_filled = false; 
 		
 		cplex = new IloCplex();
-		cplex.setParam(	IloCplex.Param.TimeLimit, timelim); 
+		//cplex.setParam(	IloCplex.Param.TimeLimit, timelim); 
+		cplex.setParam(IloCplex.Param.MIP.Tolerances.MIPGap, minGap); 
+		cplex.setParam(IloCplex.StringParam.WorkDir, "C:\\Users\\Gebruiker\\Documents");
+		cplex.setParam(IloCplex.IntParam.NodeFileInd, 2);
+		cplex.setParam(IloCplex.DoubleParam.WorkMem, 1024.0);
+		cplex.setParam(IloCplex.Param.Emphasis.Memory, true);
 		
 		initVars();
 		if (max) {
@@ -118,13 +112,7 @@ public class MaxModel {
 				}
 			}
 		}
-//		// create Y 
-//		for (int k = 0; k <K; k++) {
-//			for (int t = 0; t < T; t++) {
-//				IloNumVar varY = cplex.boolVar();
-//				Y[k][t] = varY;
-//			}
-//		}
+		
 		// create V 
 		for (int j = 0; j < J; j++) {
 			for (int t = 0; t < T; t++) {
@@ -208,42 +196,8 @@ public class MaxModel {
 		}
 	}
 	
-	// C2: ensures max 1 Training per time t 
-//	public void initMax1Training() throws IloException{
-//		for (int i =0 ; i<I ; i++) {
-//			for (int t=0; t<T; t++) {
-//				IloNumExpr expr = cplex.numExpr();
-//				for (int j = 0 ; j<J; j++) {
-//					IloNumVar var= X[i][j][t];
-//					expr = cplex.sum(expr, var);
-//				}
-//				if (expr != null){
-//				cplex.addLe(expr, 1);	
-//				}
-//			}
-//		}
-//	}
-	
 	// Assuring max number of planes available
 	public void initNrPlanesIsNrPilots() throws IloException{
-//		for (int t = 0; t<T; t++) {
-//			IloNumExpr expr = cplex.numExpr();
-//			for (int k = 0 ; k< K; k++) {
-//				IloNumVar var= Y[k][t];
-//				expr = cplex.sum(expr, var); 
-//			}
-//			IloNumExpr expr2 = cplex.numExpr();
-//			for(int i = 0; i< I; i++) {
-//				for (int j = 0; j < J; j++) {
-//					IloNumVar var= X[i][j][t];
-//					expr2 = cplex.sum(expr2, var);
-//				}
-//			}
-//			if (expr != null && expr2 != null){
-//			cplex.addEq(expr, expr2);	
-//			}
-//		}
-		
 		for (int t = 0; t < T; t++) {
 			//IloNumExpr expr1a = cplex.numExpr();
 			IloNumExpr expr2a = cplex.numExpr();
@@ -272,8 +226,34 @@ public class MaxModel {
 			cplex.addLe(expr2a, Kair);
 			cplex.addLe(expr3a, Ksim);
 		}
-	}
-	
+	} 
+
+	// PREFERENCE CONSTRAINT: not more than 70% of aircrafts used (42 aircrafts), penalty is more are used 
+	// same for simulation, necessary??
+//	public void initRobustNrAircrafts(int Krobust) throws IloException{
+//		// create Y 
+//		for (int t = 0; t < T; t++) {
+//			IloNumVar varY = cplex.boolVar();
+//			Y[t] = varY;
+//		}	
+//		// create extra constraint 
+//		for (int t = 0; t < T; t++) {
+//			//lhs 
+//			IloNumExpr expr = cplex.numExpr(); 
+//			for (int i = 0; i < I; i++) {
+//				for (int j = 0; j < 23 ; j++) {
+//					expr = cplex.sum(expr, X[i][j][t]); 
+//				}
+//			}
+//			//rhs 
+//			IloNumExpr expr2 = cplex.numExpr(); 
+//			expr2 = cplex.sum(expr2, Y[t]);
+//			expr2 = cplex.diff(Krobust ,expr2);
+//			
+//			cplex.addLe(expr, expr2);  
+//		}
+//	}
+		
 	//C6
 	public void initNrPilotsPerTraining()throws IloException{
 		for (int j = 0 ; j< J ; j++) {
@@ -294,34 +274,7 @@ public class MaxModel {
 			}
 		}
 	}
-	
-	//C7
-//	public void initRequiredMachine() throws IloException{
-//		for (int t = 0; t < T; t++) {
-//			// left side
-//			IloNumExpr expr = cplex.numExpr();
-//			for (int k = 0; k < K ; k++) {
-//				IloNumExpr term = cplex.prod(planes.get(k).getType(), Y[k][t]);
-//				expr = cplex.sum(expr, term); 
-//			}
-//			
-//			// right side 
-//			IloNumExpr expr2 = cplex.numExpr();
-//			for (int j = 0; j<J; j++) {
-//				IloNumExpr expr2temp = cplex.numExpr();
-//				for (int i = 0; i<I; i++) {
-//					IloNumVar var = X[i][j][t];
-//					expr2temp = cplex.sum(expr2temp, var); 
-//				}
-//				expr2temp = cplex.prod(expr2temp, trainings.get(j).getR());
-//				expr2 = cplex.sum(expr2, expr2temp); 
-//			}
-//			if (expr != null && expr2 != null){
-//				cplex.addEq(expr, expr2);	
-//			}
-//		}
-//	}
-	
+		
 	// objective
 	public void initObjective() throws IloException, objectNotFoundException{
 	IloNumExpr expr= cplex.linearNumExpr();
@@ -339,6 +292,7 @@ public class MaxModel {
 	}
 	cplex.addMaximize(expr);
 	}
+	
 	// minimum objective
 	public void initMinObjective() throws IloException, objectNotFoundException{
 	IloNumExpr expr= cplex.linearNumExpr();
@@ -461,6 +415,18 @@ public class MaxModel {
 		}
 	}
 	
+	// PREFERENCE CONSTRAINT: at most x pilots with same holiday
+	public void initMaxPilotsHoliday(int max) throws IloException {
+		// to do  
+		for (int t = 0; t < T; t++) {
+			IloNumExpr expr = cplex.numExpr();
+			for (int i = 0; i < I ; i++) {
+				expr = cplex.sum(expr, Holiday[i][t]);
+			}
+			cplex.addLe(expr, max); 
+		}
+	}
+	
 	public void initOfficeTasks(int nrOHexp, int nrOHinexp) throws IloException {
 		for (int i=0; i<I; i++) {
 			IloNumExpr expr = cplex.numExpr();
@@ -522,16 +488,75 @@ public class MaxModel {
 		}
 	}
 	
+	// Preference constraint: min x weekend qra per quarter
+		public void initMinWeekendQRA(int min) throws IloException {
+			for (int i = 0; i < I ; i++) {
+				IloNumExpr expr = cplex.numExpr(); 
+				for (int t = 0; t < T; t++) {
+					expr = cplex.sum(expr,RestDay[i][t]); 
+				}
+				cplex.addGe(expr, min);
+			}
+		}
+		
+		// Preference constraint: max x weekend qra per quarter 
+		public void initMaxWeekendQRA(int max) throws IloException {
+			for (int i = 0; i < I ; i++) {
+				IloNumExpr expr = cplex.numExpr(); 
+				for (int t = 0; t < T; t++) {
+					expr = cplex.sum(expr,RestDay[i][t]); 
+				}
+				cplex.addLe(expr, max);
+			}
+		}	
+		
+		// Preference constraint: max nr qra shifts per quarter
+		public void initMaxNrQra(int max) throws IloException {
+			for (int i = 0; i < I ; i++) {
+				IloNumExpr expr = cplex.numExpr(); 
+				for (int t = 0; t < T; t++) {
+					expr = cplex.sum(expr,QRA[i][t]); 
+				}
+				cplex.addLe(expr, max);
+			}
+		}
+		
+		// Preference constraint: min nr qra shifts per quarter
+				public void initMinNrQra(int min) throws IloException {
+					for (int i = 0; i < I ; i++) {
+						IloNumExpr expr = cplex.numExpr(); 
+						for (int t = 0; t < T; t++) {
+							expr = cplex.sum(expr,QRA[i][t]); 
+						}
+						cplex.addGe(expr, min);
+					}
+				}	
+
 	public void initCourses(int nrCourses) throws IloException {
 		IloNumExpr expr = cplex.numExpr(); 
 		for (int t = 0 ; t<T; t++) {	
 			expr = cplex.sum(expr, Course[t]); 
 		}
-		cplex.addEq(expr, nrCourses);
+		if (expr != null) {
+			cplex.addEq(expr, nrCourses);	
+		}
 	}
 	
-	
-
+	// Preference constraint: max 1 course per week 
+	public void initMax1CourseWeek() throws IloException {
+		for (int t =0; t<T; t++) {
+			if (t % 5 == 0 && t+5 < T) {
+				IloNumExpr expr = cplex.numExpr(); 
+				for (int s = t; s < t+5; s++) {
+					expr = cplex.sum(expr, Course[s]); 
+				}
+				if (expr != null) {
+					cplex.addLe(expr, 1); 
+				}
+			}
+		}
+	}
+		
 	public boolean solve() throws IloException{
 		return cplex.solve();
 	}
@@ -561,8 +586,22 @@ public class MaxModel {
 					Xvalue[j][t] = (int) cplex.getValue(X[1][j][t]);
 				}
 			}
+			int[][] nrPlanes = new int [1][T]; 
+			for (int t= 0; t <T; t++) {
+				int sum = 0; 
+				for (int i = 0; i < I; i++) {
+					for (int j = 0 ; j < J ; j++) {
+						if (cplex.getValue(X[i][j][t])==1) {
+							sum ++ ; 
+						}
+					}
+				nrPlanes[0][t] = sum; 	
+				}
+			}
+			
 			Excel newExcel = new Excel();
 			newExcel.addExcelWorksheet("Pilot 1", Xvalue, "j", "t");
+			newExcel.addExcelWorksheet("NrPlanes", nrPlanes, "", "t");
 			newExcel.addExcelWorksheet("Holiday", convertVariable(Holiday), "i", "t");
 			newExcel.addExcelWorksheet("Long Holiday", convertVariable(LongHoliday), "i", "t");
 			newExcel.addExcelWorksheet("Office Hours", convertVariable(Office), "i", "t");
