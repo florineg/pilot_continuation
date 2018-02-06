@@ -73,9 +73,8 @@ public class World {
 		int totalObjective = 0; 
 		int[] resultsObjective = new int[4];
 		
-		//MaxModel(ArrayList<Pilot> pilotList, ArrayList<Training> trainingList, int nrAircrafts, int nrSimulators, int lengthTimeFrame, double valueBeta, boolean max, int time)
 		//Q1
-		MaxModel m = new MaxModel(pilots, trainings, 60, 12, 60, 17, true,1);
+		MaxModel m = new MaxModel(pilots, trainings, 60, 12, 60, 1.5, true, 0.02, 1);
 		m.initAdditionalVars();
 		m.initAssignTasks();
 		m.initWinter(); 
@@ -84,18 +83,32 @@ public class World {
 		m.initQRA();
 		//m.initCourses(2);
 		
+		// preference constraints 
+		m.initMaxPilotsHoliday(10);
+		m.initMax1CourseWeek();
+		m.initMaxNrQra(4);
+		m.initMinNrQra(1);
+		m.initMaxWeekendQRA(2);
+		//m.initMinWeekendQRA(1);
+		
+		
 		m.readSolution("Q1");
+		double tic = System.nanoTime();
+		double toc; 
 		if(m.solve()) { 
+			toc = System.nanoTime(); 
 			pilots = m.updateQij();
 			m.printSolution("Q1");
 			totalObjective += m.getObjectiveX(); 
 			resultsObjective[0] = m.getObjectiveX();
 			System.out.println("Total objective Q1: "+ totalObjective);
+			System.out.print("time to run program in hours" + (toc-tic)/1000000000/60/60);
 			m.writeSolution("Q1");
 		} 
-		 
+		
+		System.gc(); 
 		//Q2
-		m = new MaxModel(pilots, trainings, 60, 12, 65, 17, true, 1);
+		m = new MaxModel(pilots, trainings, 60, 12, 65, 1.5, true, 0.09, 4000);
 		m.initAdditionalVars();
 		m.initAssignTasks();
 		m.initSummer();
@@ -104,17 +117,30 @@ public class World {
 		//m.initQRA();
 		m.initCourses(2); 
 		
-		m.readSolution("Q2");
+		// preference constraints 
+		m.initMaxPilotsHoliday(10);
+		m.initMax1CourseWeek();
+		m.initMaxNrQra(4);
+		m.initMinNrQra(1);
+		m.initMaxWeekendQRA(2);
+		//m.initMinWeekendQRA(1);		
+		
+//		m.readSolution("Q2");
+		tic = System.nanoTime();
 		if(m.solve()) {
+			toc = System.nanoTime();
 			pilots = m.updateQij();
 			m.printSolution("Q2"); 
 			totalObjective += m.getObjectiveX(); 
-			resultsObjective[1] = m.getObjectiveX(); 
+			resultsObjective[1] = m.getObjectiveX();
+			System.out.println("Total objective Q1: "+ totalObjective);
+			System.out.print("time to run program in hours" + (toc-tic)/1000000000/60/60);
 			m.writeSolution("Q2");
 		} 
 		
+		System.gc();
 //		//Q3
-		m = new MaxModel(pilots, trainings, 60, 12, 65, 1.8, true, 1);
+		m = new MaxModel(pilots, trainings, 60, 12, 65, 1.5, true, 0.02, 4000);
 		m.initAdditionalVars();
 		m.initAssignTasks();
 		m.initSummer();
@@ -123,17 +149,30 @@ public class World {
 		m.initQRA();
 		//m.initCourses(2); 
 		
-		m.readSolution("Q3");
+		// preference constraints 
+		m.initMaxPilotsHoliday(10);
+		m.initMax1CourseWeek();
+		m.initMaxNrQra(4);
+		m.initMinNrQra(1);
+		m.initMaxWeekendQRA(2);
+		//m.initMinWeekendQRA(1);
+		
+//		m.readSolution("Q3");
+		tic = System.nanoTime();
 		if(m.solve()) {
+			toc = System.nanoTime();
 			pilots = m.updateQij();
 			m.printSolution("Q3"); 
 			totalObjective += m.getObjectiveX(); 
 			resultsObjective[2] = m.getObjectiveX();
+			System.out.println("Total objective Q1: "+ totalObjective);
+			System.out.print("time to run program in hours" + (toc-tic)/1000000000/60/60);
 			m.writeSolution("Q3");
 		} 
+		System.gc();
 		
 //		//Q4
-		m = new MaxModel(pilots, trainings, 60, 12, 64, 1.2, false, 1000);
+		m = new MaxModel(pilots, trainings, 60, 12, 64, 1.1, false, 0.008, 4000);
 		m.initAdditionalVars();
 		m.initAssignTasks();
 		m.initWinter();
@@ -141,16 +180,28 @@ public class World {
 		m.initOfficeTasks(12,7);
 		//m.initQRA();
 		m.initCourses(2); 
+
+		// preference constraints 
+		m.initMaxPilotsHoliday(10);
+		m.initMax1CourseWeek();
+		m.initMaxNrQra(4);
+		m.initMinNrQra(1);
+		m.initMaxWeekendQRA(2);
+		//m.initMinWeekendQRA(1);
 		
 //		m.readSolution("Q4");
+		tic = System.nanoTime();
 		if(m.solve()) {
+			toc = System.nanoTime();
 			pilots = m.updateQij();
 			m.printSolution("Q4"); 
 			totalObjective += m.getObjectiveX(); 
 			resultsObjective[3] = m.getObjectiveX();
+			System.out.println("Total objective Q1: "+ totalObjective);
+			System.out.print("time to run program in hours" + (toc-tic)/1000000000/60/60);
 			m.writeSolution("Q4");
 		} 
-		
+		System.gc();
 		int leftQ = 0; 
 		for (int i = 0; i < pilots.size(); i++) {
 			for (int j = 0; j < trainings.size(); j++) {
