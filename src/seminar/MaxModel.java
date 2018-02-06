@@ -48,7 +48,7 @@ public class MaxModel {
 		
 	private double beta;
 	
-	public MaxModel(ArrayList<Pilot> pilotList, ArrayList<Training> trainingList, int nrAircrafts, int nrSimulators, int lengthTimeFrame, double valueBeta, boolean max, double minGap) throws IloException, objectNotFoundException{
+	public MaxModel(ArrayList<Pilot> pilotList, ArrayList<Training> trainingList, int nrAircrafts, int nrSimulators, int lengthTimeFrame, double valueBeta, boolean max, double minGap, int time) throws IloException, objectNotFoundException{
 		pilots = pilotList; 
 		trainings = trainingList; 
 //		planes = planeList; 
@@ -60,7 +60,7 @@ public class MaxModel {
 		T = lengthTimeFrame; 
 		beta = valueBeta; 
 		
-//		timelim = time; 
+		timelim = time; 
 		X = new IloNumVar[I][J][T];
 		V = new IloNumVar[J][T]; 
 		Z = new IloNumVar[I][J]; 
@@ -73,7 +73,7 @@ public class MaxModel {
 		q_filled = false; 
 		
 		cplex = new IloCplex();
-		//cplex.setParam(	IloCplex.Param.TimeLimit, timelim); 
+		cplex.setParam(	IloCplex.Param.TimeLimit, timelim); 
 		cplex.setParam(IloCplex.Param.MIP.Tolerances.MIPGap, minGap); 
 		cplex.setParam(IloCplex.StringParam.WorkDir, "C:\\Users\\Gebruiker\\Documents");
 		cplex.setParam(IloCplex.IntParam.NodeFileInd, 2);
@@ -556,7 +556,45 @@ public class MaxModel {
 			}
 		}
 	}
-		
+	
+	// update pilots with schedule 
+	public void setSchedulePilot(int tstart) throws UnknownObjectException, IloException, objectNotFoundException {
+		for (int i = 0 ; i<I ; i++) {
+			for (int t=0;t<T;t++) {
+				boolean pilotDoesEvent = false; 
+				for (int j = 0 ; j<J; j++) {
+					if (cplex.getValue(X[i][j][t]) == 1) {
+						pilots.get(i).setSchedule(tstart + t, j);
+						pilotDoesEvent = true; 
+					}
+				}
+
+				if (!pilotDoesEvent) {
+					if ((int) cplex.getValue(DutyFree[i][t]) ==1) {
+						pilots.get(i).setSchedule(tstart + t,46);
+					}			
+					else if ((int) cplex.getValue(QRA[i][t]) ==1){
+						pilots.get(i).setSchedule(tstart + t,47);
+					}
+					else if ((int) cplex.getValue(RestDay[i][t]) ==1) {
+						pilots.get(i).setSchedule(tstart + t,48);
+					}
+					else if ((int) cplex.getValue(Holiday[i][t]) ==1) {
+						pilots.get(i).setSchedule(tstart + t,49);
+					}
+					else if ((int) cplex.getValue(Course[t]) ==1) {
+						pilots.get(i).setSchedule(tstart + t,50);
+					}
+					else if ((int) cplex.getValue(Office[i][t]) ==1) {
+						pilots.get(i).setSchedule(tstart + t,51);
+					}
+					else {
+						throw new objectNotFoundException("No Task at all - MisMatch");
+					}
+				}
+			}	
+		}
+	}
 	public boolean solve() throws IloException{
 		return cplex.solve();
 	}

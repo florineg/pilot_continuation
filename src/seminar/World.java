@@ -74,7 +74,7 @@ public class World {
 		int[] resultsObjective = new int[4];
 		
 		//Q1
-		MaxModel m = new MaxModel(pilots, trainings, 60, 12, 60, 1.5, true, 0.02);
+		MaxModel m = new MaxModel(pilots, trainings, 60, 12, 60, 1.5, true, 0.02, 1);
 		m.initAdditionalVars();
 		m.initAssignTasks();
 		m.initWinter(); 
@@ -92,7 +92,7 @@ public class World {
 		//m.initMinWeekendQRA(1);
 		
 		
-//		m.readSolution("Q1");
+		m.readSolution("Q1");
 		double tic = System.nanoTime();
 		double toc; 
 		if(m.solve()) { 
@@ -108,7 +108,7 @@ public class World {
 		
 		System.gc(); 
 		//Q2
-		m = new MaxModel(pilots, trainings, 60, 12, 65, 1.5, true, 0.09);
+		m = new MaxModel(pilots, trainings, 60, 12, 65, 1.5, true, 0.09, 4000);
 		m.initAdditionalVars();
 		m.initAssignTasks();
 		m.initSummer();
@@ -140,7 +140,7 @@ public class World {
 		
 		System.gc();
 //		//Q3
-		m = new MaxModel(pilots, trainings, 60, 12, 65, 1.5, true, 0.02);
+		m = new MaxModel(pilots, trainings, 60, 12, 65, 1.5, true, 0.02, 4000);
 		m.initAdditionalVars();
 		m.initAssignTasks();
 		m.initSummer();
@@ -172,7 +172,7 @@ public class World {
 		System.gc();
 		
 //		//Q4
-		m = new MaxModel(pilots, trainings, 60, 12, 64, 1.1, false, 0.008);
+		m = new MaxModel(pilots, trainings, 60, 12, 64, 1.1, false, 0.008, 4000);
 		m.initAdditionalVars();
 		m.initAssignTasks();
 		m.initWinter();
